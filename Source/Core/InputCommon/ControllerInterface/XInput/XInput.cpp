@@ -56,7 +56,12 @@ typedef decltype(&XInputGetState) XInputGetState_t;
 
 static XInputGetCapabilities_t PXInputGetCapabilities = nullptr;
 static XInputSetState_t PXInputSetState = nullptr;
-static XInputGetState_t PXInputGetState = nullptr;
+// :chiri: shader debugging
+extern "C"
+{
+	DWORD(__stdcall *PXInputGetState)(_In_  DWORD dwUserIndex, _Out_ XINPUT_STATE* pState);
+}
+//static XInputGetState_t PXInputGetState = nullptr;
 
 void Init(std::vector<Core::Device*>& devices)
 {

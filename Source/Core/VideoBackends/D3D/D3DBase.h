@@ -13,6 +13,9 @@
 namespace DX11
 {
 
+	// :chiri: nvapi
+	void *GetStereoHandle();
+
 #define SAFE_RELEASE(x) { if (x) (x)->Release(); (x) = NULL; }
 #define SAFE_DELETE(x) { delete (x); (x) = NULL; }
 #define SAFE_DELETE_ARRAY(x) { delete[] (x); (x) = NULL; }

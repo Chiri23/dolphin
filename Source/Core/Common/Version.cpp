@@ -3,7 +3,10 @@
 // Refer to the license.txt file included.
 
 #include "Common.h"
-#include "scmrev.h"
+//#include "scmrev.h"
+#define SCM_BRANCH_STR ""
+#define SCM_DESC_STR "NV"
+#define SCM_REV_STR "REV"
 
 #ifdef _DEBUG
 	#define BUILD_TYPE_STR "Debug "

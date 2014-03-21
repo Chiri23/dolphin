@@ -112,6 +112,10 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT iMsg, WPARAM wParam, LPARAM lParam )
 		break;
 
 	default:
+		// :chiri: fullscreen window messages forwarding.
+		if (SConfig::GetInstance().m_LocalCoreStartupParameter.bFullscreen)
+			PostMessage(m_hParent, iMsg, wParam, lParam);
+
 		return DefWindowProc(hWnd, iMsg, wParam, lParam);
 	}
 	return 0;
@@ -121,6 +125,11 @@ HWND OpenWindow(HWND parent, HINSTANCE hInstance, int width, int height, const T
 {
 	wndClass.cbSize = sizeof( wndClass );
 	wndClass.style  = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+
+	// :chiri: fullscreen
+	if (SConfig::GetInstance().m_LocalCoreStartupParameter.bFullscreen)
+		wndClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+
 	wndClass.lpfnWndProc = WndProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
@@ -137,8 +146,13 @@ HWND OpenWindow(HWND parent, HINSTANCE hInstance, int width, int height, const T
 
 	m_hParent = parent;
 
-	m_hWnd = CreateWindow(m_szClassName, title, (g_ActiveConfig.backend_info.bSupports3DVision && g_ActiveConfig.b3DVision) ? WS_EX_TOPMOST | WS_POPUP : WS_CHILD,
-		0, 0, width, height, m_hParent, NULL, hInstance, NULL);
+	// :chiri: fullscreen
+	if (SConfig::GetInstance().m_LocalCoreStartupParameter.bFullscreen)
+		m_hWnd = CreateWindow(m_szClassName, title, WS_OVERLAPPEDWINDOW,
+			0, 0, width, height, GetDesktopWindow(), NULL, hInstance, NULL);
+	else
+		m_hWnd = CreateWindow(m_szClassName, title, (g_ActiveConfig.backend_info.bSupports3DVision && g_ActiveConfig.b3DVision) ? WS_EX_TOPMOST | WS_POPUP : WS_CHILD,
+			0, 0, width, height, m_hParent, NULL, hInstance, NULL);
 
 	return m_hWnd;
 }
@@ -149,6 +163,10 @@ void Show()
 	BringWindowToTop(m_hWnd);
 	UpdateWindow(m_hWnd);
 	SetFocus(m_hParent);
+
+	// :chiri: fullscreen hide cursor
+	if (SConfig::GetInstance().m_LocalCoreStartupParameter.bFullscreen)
+		ShowCursor(false);
 }
 
 HWND Create(HWND hParent, HINSTANCE hInstance, const TCHAR *title)

@@ -36,6 +36,10 @@ private:
 			const float *colmat);
 
 		void Bind(unsigned int stage);
+
+		// :chiri: transparent texture
+		void BindTransparent(unsigned int stage);
+
 		bool Save(const std::string filename, unsigned int level);
 	};
 

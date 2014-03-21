@@ -160,6 +160,10 @@ struct SCoreStartupParameter
 	bool bRenderWindowAutoSize, bKeepWindowOnTop;
 	bool bFullscreen, bRenderToMain;
 	bool bProgressive, bDisableScreenSaver;
+	// :chiri: refresh rate
+	int iRefreshRate;
+	// :chiri: debug keys
+	bool bStereoDebug;
 
 	int iPosX, iPosY, iWidth, iHeight;
 

@@ -34,6 +34,11 @@
 #include <strsafe.h>
 #include "ImageWrite.h"
 
+// :chiri: game id
+#include "VertexManagerBase.h"
+// :chiri: fullscreen
+#include "../../Core/ConfigManager.h"
+
 namespace DX11
 {
 
@@ -953,9 +958,14 @@ void Renderer::SwapImpl(u32 xfbAddr, u32 fbWidth, u32 fbHeight,const EFBRectangl
 	UpdateActiveConfig();
 	TextureCache::OnConfigChanged(g_ActiveConfig);
 
-	SetWindowSize(fbWidth, fbHeight);
+	// :chiri: don't handle window resize on fullscreen.
+	bool windowResized = false;
+	if (!SConfig::GetInstance().m_LocalCoreStartupParameter.bFullscreen)
+	{
+		SetWindowSize(fbWidth, fbHeight);
 
-	const bool windowResized = CheckForResize();
+		windowResized = CheckForResize();
+	}
 
 	bool xfbchanged = false;
 

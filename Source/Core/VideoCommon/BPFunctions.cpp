@@ -39,6 +39,16 @@ void SetScissor()
 	EFBRectangle rc (bpmem.scissorTL.x - xoff - 342, bpmem.scissorTL.y - yoff - 342,
 					bpmem.scissorBR.x - xoff - 341, bpmem.scissorBR.y - yoff - 341);
 
+	// :chiri: Ikaruga
+	if (g_vertex_manager->gameId == 'G' + ('I' << 7) + ('K' << 14) + ('P' << 21) + ('7' << 28) + ('0' << 35))
+	{
+		// Show everything.
+		rc.left = 0;
+		rc.top = 0;
+		rc.right = EFB_WIDTH;
+		rc.bottom = EFB_HEIGHT;
+	}
+
 	if (rc.left < 0) rc.left = 0;
 	if (rc.top < 0) rc.top = 0;
 	if (rc.right > EFB_WIDTH) rc.right = EFB_WIDTH;
@@ -78,12 +88,48 @@ void SetColorMask()
 	g_renderer->SetColorMask();
 }
 
+// :chiri: const removed
 void CopyEFB(u32 dstAddr, unsigned int dstFormat, unsigned int srcFormat,
-	const EFBRectangle& srcRect, bool isIntensity, bool scaleByHalf)
+	EFBRectangle& srcRect, bool isIntensity, bool scaleByHalf)
 {
 	// bpmem.zcontrol.pixel_format to PIXELFMT_Z24 is when the game wants to copy from ZBuffer (Zbuffer uses 24-bit Format)
 	if (g_ActiveConfig.bEFBCopyEnable)
 	{
+		// :chiri: Zelda SS
+		if (g_vertex_manager->gameId == 'S' + ('O' << 7) + ('U' << 14) + ('E' << 21) + ('0' << 28) + ('1' << 35))
+		{
+			// Softener effect resolution fix.
+			if (srcRect.left == 0 && srcRect.top == 0 && srcRect.right > 500 && srcRect.right <= 608 && srcRect.bottom == 456)
+			{
+				srcRect.right = 608;
+				scaleByHalf = false;
+			}
+			else if (srcRect.left == 336 && srcRect.top == 224 && srcRect.right > (336 + 32) && srcRect.bottom > (224 + 32))
+			{
+				srcRect.right = 608;
+				srcRect.bottom = 456;
+			}
+		}
+
+		// :chiri: The house of the dead overkill
+		else if (g_vertex_manager->gameId == 'R' + ('H' << 7) + ('O' << 14) + ('P' << 21) + ('8' << 28) + ('P' << 35))
+		{
+			// Correct post processing from lower right area to full screen.
+			if (srcRect.left == 320 && srcRect.top == 240 && srcRect.right == 640 && srcRect.bottom == 480)
+			{
+				srcRect.left = 0;
+				srcRect.top = 0;
+			}
+		}
+
+		// :chiri: Sonic Colours.
+		else if (g_vertex_manager->gameId == 'S' + ('N' << 7) + ('C' << 14) + ('P' << 21) + ('8' << 28) + ('P' << 35))
+		{
+			// Skip blur effect.
+			if (srcRect.left == 0 && srcRect.top == 0 && srcRect.right == 160 && srcRect.bottom == 120)
+				return;
+		}
+
 		TextureCache::CopyRenderTargetToTexture(dstAddr, dstFormat, srcFormat,
 			srcRect, isIntensity, scaleByHalf);
 	}

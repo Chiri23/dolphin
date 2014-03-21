@@ -9,8 +9,16 @@
 #include "D3DTexture.h"
 #include "GfxState.h"
 
+// :chiri: nvapi
+#include "../../../nvapi.h"
+#pragma comment(lib, "nvapi64.lib")
+#include "../../Core/ConfigManager.h"
+
 namespace DX11
 {
+	// :chiri: nvapi
+	StereoHandle g_StereoHandle = 0;
+	void *GetStereoHandle() { return &g_StereoHandle; }
 
 HINSTANCE hD3DCompilerDll = NULL;
 D3DREFLECT PD3DReflect = NULL;
@@ -230,6 +238,11 @@ HRESULT Create(HWND wnd)
 	hr = PCreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&factory);
 	if (FAILED(hr)) MessageBox(wnd, _T("Failed to create IDXGIFactory object"), _T("Dolphin Direct3D 11 backend"), MB_OK | MB_ICONERROR);
 
+	// :chiri: nvapi
+	// Prepare NVAPI for use in this application
+	NvAPI_Status status;
+	status = NvAPI_Initialize();
+
 	hr = factory->EnumAdapters(g_ActiveConfig.iAdapter, &adapter);
 	if (FAILED(hr))
 	{
@@ -264,10 +277,28 @@ HRESULT Create(HWND wnd)
 	swap_chain_desc.SampleDesc.Quality = 0;
 	swap_chain_desc.Windowed = TRUE;
 
+	// :chiri: full screen mode.
+	if (SConfig::GetInstance().m_LocalCoreStartupParameter.bFullscreen)
+	{
+		swap_chain_desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swap_chain_desc.BufferDesc.RefreshRate.Denominator = 1;
+		swap_chain_desc.Windowed = FALSE;
+	}
+
 	DXGI_MODE_DESC mode_desc;
 	memset(&mode_desc, 0, sizeof(mode_desc));
 	mode_desc.Width = xres;
 	mode_desc.Height = yres;
+
+	// :chiri: refresh rate
+	if (SConfig::GetInstance().m_LocalCoreStartupParameter.bFullscreen)
+	{
+		DXGI_RATIONAL refreshRate;
+		refreshRate.Numerator = SConfig::GetInstance().m_LocalCoreStartupParameter.iRefreshRate;
+		refreshRate.Denominator = 1;
+		mode_desc.RefreshRate = refreshRate;
+	}
+
 	mode_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	mode_desc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	hr = output->FindClosestMatchingMode(&mode_desc, &swap_chain_desc.BufferDesc, NULL);
@@ -310,6 +341,9 @@ HRESULT Create(HWND wnd)
 	SAFE_RELEASE(factory);
 	SAFE_RELEASE(output);
 	SAFE_RELEASE(adapter);
+
+	// :chiri: nvapi
+	NvAPI_Stereo_CreateHandleFromIUnknown(device, &g_StereoHandle);
 
 	ID3D11Texture2D* buf;
 	hr = swapchain->GetBuffer(0, IID_ID3D11Texture2D, (void**)&buf);

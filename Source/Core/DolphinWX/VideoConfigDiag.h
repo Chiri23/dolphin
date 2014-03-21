@@ -109,6 +109,9 @@ protected:
 
 	void Event_DisplayResolution(wxCommandEvent &ev);
 
+	// :chiri: refresh rate
+	void Event_RefreshRate(wxCommandEvent &ev);
+
 	void Event_ProgressiveScan(wxCommandEvent &ev)
 	{
 		SConfig::GetInstance().m_SYSCONF->SetData("IPL.PGS", ev.GetInt());
@@ -121,6 +124,9 @@ protected:
 	{
 		int samples[] = { 0, 512, 128 };
 		vconfig.iSafeTextureCache_ColorSamples = samples[ev.GetInt()];
+
+		// :chiri: fixed, overridden texture hash for hardcoded patches
+		vconfig.iSafeTextureCache_ColorSamples = 128;
 
 		ev.Skip();
 	}
@@ -182,6 +188,10 @@ protected:
 
 	wxChoice* choice_backend;
 	wxChoice* choice_display_resolution;
+
+	// :chiri: refresh rate
+	wxTextCtrl *text_refresh_rate;
+
 	wxStaticText* text_aamode;
 	SettingChoice* choice_aamode;
 

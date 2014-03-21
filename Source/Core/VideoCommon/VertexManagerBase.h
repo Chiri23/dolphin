@@ -34,6 +34,9 @@ public:
 	static u8 *s_pBaseBufferPointer;
 	static u8 *s_pEndBufferPointer;
 
+	// :chiri: game filter.
+	static u32 gameId;
+
 	static u32 GetRemainingSize();
 	static void PrepareForAdditionalData(int primitive, u32 count, u32 stride);
 	static u32 GetRemainingIndices(int primitive);

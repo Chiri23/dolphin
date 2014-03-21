@@ -15,6 +15,15 @@
 #include "ConfigManager.h"
 #include "HW/Memmap.h"
 
+// :chiri: game id
+#include "VertexManagerBase.h"
+// :chiri: nvapi
+#include "../../../nvapi.h"
+namespace DX11
+{
+	void *GetStereoHandle();
+}
+
 // ugly
 extern int frameCount;
 
@@ -873,6 +882,15 @@ void TextureCache::CopyRenderTargetToTexture(u32 dstAddr, unsigned int dstFormat
 
 	if (NULL == entry)
 	{
+		// :chiri: stereo buffer handling.
+		// Zelda TP EUR, Sonic Colours.
+		if (g_vertex_manager->gameId == 'R' + ('Z' << 7) + ('D' << 14) + ('P' << 21) + ('0' << 28) + ('1' << 35) ||
+			g_vertex_manager->gameId == 'S' + ('N' << 7) + ('C' << 14) + ('P' << 21) + ('8' << 28) + ('P' << 35))
+		{
+			StereoHandle *sh = (StereoHandle *)DX11::GetStereoHandle();
+			NvAPI_Stereo_SetSurfaceCreationMode(sh, NVAPI_STEREO_SURFACECREATEMODE_FORCESTEREO);
+		}
+
 		// create the texture
 		textures[dstAddr] = entry = g_texture_cache->CreateRenderTargetTexture(scaled_tex_w, scaled_tex_h);
 

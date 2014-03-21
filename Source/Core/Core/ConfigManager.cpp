@@ -196,6 +196,10 @@ void SConfig::SaveSettings()
 
 	// Display
 	ini.Set("Display", "FullscreenResolution", m_LocalCoreStartupParameter.strFullscreenResolution);
+
+	// :chiri: refresh rate
+	ini.Set("Display", "RefreshRate", m_LocalCoreStartupParameter.iRefreshRate);
+
 	ini.Set("Display", "Fullscreen",           m_LocalCoreStartupParameter.bFullscreen);
 	ini.Set("Display", "RenderToMain",         m_LocalCoreStartupParameter.bRenderToMain);
 	ini.Set("Display", "RenderWindowXPos",     m_LocalCoreStartupParameter.iRenderWindowXPos);
@@ -344,6 +348,12 @@ void SConfig::LoadSettings()
 		// Display
 		ini.Get("Display", "Fullscreen",           &m_LocalCoreStartupParameter.bFullscreen, false);
 		ini.Get("Display", "FullscreenResolution", &m_LocalCoreStartupParameter.strFullscreenResolution, "Auto");
+
+		// :chiri: refresh rate
+		ini.Get("Display", "RefreshRate",			&m_LocalCoreStartupParameter.iRefreshRate, 120);
+		// :chiri: debug
+		m_LocalCoreStartupParameter.bStereoDebug = false;
+
 		ini.Get("Display", "RenderToMain",         &m_LocalCoreStartupParameter.bRenderToMain, false);
 		ini.Get("Display", "RenderWindowXPos",     &m_LocalCoreStartupParameter.iRenderWindowXPos, -1);
 		ini.Get("Display", "RenderWindowYPos",     &m_LocalCoreStartupParameter.iRenderWindowYPos, -1);

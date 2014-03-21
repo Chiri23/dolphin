@@ -673,6 +673,11 @@ bool CFrame::RendererHasFocus()
 #ifdef _WIN32
 	if (m_RenderParent->GetParent()->GetHWND() == GetForegroundWindow())
 		return true;
+
+	// :chiri: always pretend to have window focus for input handling.
+	if (SConfig::GetInstance().m_LocalCoreStartupParameter.bFullscreen)
+		return true;
+
 #else
 	if (wxWindow::FindFocus() == NULL)
 		return false;

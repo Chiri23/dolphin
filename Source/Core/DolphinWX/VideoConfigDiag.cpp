@@ -73,6 +73,10 @@ wxString backend_desc = wxTRANSLATE("Selects what graphics API to use internally
 #endif
 wxString adapter_desc = wxTRANSLATE("Select a hardware adapter to use.\n\nIf unsure, use the first one.");
 wxString display_res_desc = wxTRANSLATE("Selects the display resolution used in fullscreen mode.\nThis should always be bigger than or equal to the internal resolution. Performance impact is negligible.\n\nIf unsure, use your desktop resolution.\nIf still unsure, use the highest resolution which works for you.");
+
+// :chiri: refresh rate
+wxString refresh_rate_desc = wxTRANSLATE("Full screen refresh rate.");
+
 wxString use_fullscreen_desc = wxTRANSLATE("Enable this if you want the whole screen to be used for rendering.\nIf this is disabled, a render window will be created instead.\n\nIf unsure, leave this unchecked.");
 wxString auto_window_size_desc = wxTRANSLATE("Automatically adjusts the window size to your internal resolution.\n\nIf unsure, leave this unchecked.");
 wxString keep_window_on_top_desc = wxTRANSLATE("Keep the game window on top of all other windows.\n\nIf unsure, leave this unchecked.");
@@ -274,6 +278,21 @@ VideoConfigDiag::VideoConfigDiag(wxWindow* parent, const std::string &title, con
 			choice_display_resolution->Disable();
 		}
 	}
+
+	// :chiri: refresh rate.
+	{
+		wxStaticText* const label_refresh_rate = new wxStaticText(page_general, wxID_ANY, _("Refresh rate:"));
+		char buf[256];
+		sprintf(buf, "%d", SConfig::GetInstance().m_LocalCoreStartupParameter.iRefreshRate);
+		wxString label(StrToWxStr(buf));
+		text_refresh_rate = new wxTextCtrl(page_general, wxID_ANY, label, wxDefaultPosition, wxDefaultSize);
+		RegisterControl(text_refresh_rate, wxGetTranslation(display_res_desc));
+		text_refresh_rate->Bind(wxEVT_COMMAND_TEXT_UPDATED, &VideoConfigDiag::Event_RefreshRate, this);
+		choice_display_resolution->SetStringSelection(StrToWxStr(SConfig::GetInstance().m_LocalCoreStartupParameter.strFullscreenResolution));
+		szr_display->Add(label_refresh_rate, 1, wxALIGN_CENTER_VERTICAL, 0);
+		szr_display->Add(text_refresh_rate);
+	}
+
 #endif
 
 	// aspect-ratio
@@ -304,6 +323,9 @@ VideoConfigDiag::VideoConfigDiag(wxWindow* parent, const std::string &title, con
 	szr_other->Add(CreateCheckBox(page_general, _("Keep window on top"), wxGetTranslation(keep_window_on_top_desc), SConfig::GetInstance().m_LocalCoreStartupParameter.bKeepWindowOnTop));
 	szr_other->Add(CreateCheckBox(page_general, _("Hide Mouse Cursor"), wxGetTranslation(hide_mouse_cursor_desc), SConfig::GetInstance().m_LocalCoreStartupParameter.bHideCursor));
 	szr_other->Add(render_to_main_cb = CreateCheckBox(page_general, _("Render to Main Window"), wxGetTranslation(render_to_main_win_desc), SConfig::GetInstance().m_LocalCoreStartupParameter.bRenderToMain));
+
+	// :chiri: debug settings
+	szr_other->Add(CreateCheckBox(page_general, _("Stereo debugging"), _("Stereo debugging"), SConfig::GetInstance().m_LocalCoreStartupParameter.bStereoDebug));
 
 	if (Core::GetState() != Core::CORE_UNINITIALIZED)
 		render_to_main_cb->Disable();
@@ -598,6 +620,18 @@ void VideoConfigDiag::Event_DisplayResolution(wxCommandEvent &ev)
 {
 	SConfig::GetInstance().m_LocalCoreStartupParameter.strFullscreenResolution =
 		WxStrToStr(choice_display_resolution->GetStringSelection());
+#if defined(HAVE_XRANDR) && HAVE_XRANDR
+	main_frame->m_XRRConfig->Update();
+#endif
+	ev.Skip();
+}
+
+// :chiri: refresh rate
+void VideoConfigDiag::Event_RefreshRate(wxCommandEvent &ev)
+{
+	char buf[256];
+	strcpy(buf, (const char*)text_refresh_rate->GetValue().mb_str(wxConvUTF8));
+	sscanf(buf, "%d", &SConfig::GetInstance().m_LocalCoreStartupParameter.iRefreshRate);
 #if defined(HAVE_XRANDR) && HAVE_XRANDR
 	main_frame->m_XRRConfig->Update();
 #endif

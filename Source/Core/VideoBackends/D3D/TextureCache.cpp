@@ -33,6 +33,13 @@ void TextureCache::TCacheEntry::Bind(unsigned int stage)
 	D3D::context->PSSetShaderResources(stage, 1, &texture->GetSRV());
 }
 
+// :chiri: transparent texture
+static D3DTexture2D *transparentTexture = 0;
+void TextureCache::TCacheEntry::BindTransparent(unsigned int stage)
+{
+	D3D::context->PSSetShaderResources(stage, 1, &transparentTexture->GetSRV());
+}
+
 bool TextureCache::TCacheEntry::Save(const std::string filename, unsigned int level)
 {
 	// TODO: Somehow implement this (D3DX11 doesn't support dumping individual LODs)
@@ -84,6 +91,23 @@ TextureCache::TCacheEntryBase* TextureCache::CreateTexture(unsigned int width,
 	unsigned int height, unsigned int expanded_width,
 	unsigned int tex_levels, PC_TexFormat pcfmt)
 {
+	// :chiri: transparent texture
+	if (!transparentTexture)
+	{
+		transparentTexture = (D3DTexture2D *)1;
+		transparentTexture = ((TCacheEntry *)CreateTexture(32, 32, 32, 1, PC_TEX_FMT_RGBA32))->texture;
+		D3D11_MAPPED_SUBRESOURCE texmap;
+		HRESULT hr = D3D::context->Map(transparentTexture->GetTex(), 0, D3D11_MAP_WRITE_DISCARD, 0, &texmap);
+		if (FAILED(hr)) PanicAlert("Failed to map a texture at %s %d\n", __FILE__, __LINE__);
+		for (int y = 0; y < 32; y++)
+		{
+			u32* pDst32 = (u32*)((u8*)texmap.pData + y * texmap.RowPitch);
+			for (int x = 0; x < 32; x++)
+				*pDst32++ = 0x00000000;
+		}
+		D3D::context->Unmap(transparentTexture->GetTex(), 0);
+	}
+
 	D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
 	D3D11_CPU_ACCESS_FLAG cpu_access = (D3D11_CPU_ACCESS_FLAG)0;
 	D3D11_SUBRESOURCE_DATA srdata, *data = NULL;

@@ -47,6 +47,10 @@
 #include "ConfigManager.h"
 #include "VideoBackendBase.h"
 #include "AudioCommon.h"
+
+// :chiri: game id
+#include "VertexManagerBase.h"
+
 #include "OnScreenDisplay.h"
 
 #include "VolumeHandler.h"
@@ -298,6 +302,10 @@ void CpuThread()
 	{
 		Common::SetCurrentThreadName("CPU-GPU thread");
 		g_video_backend->Video_Prepare();
+
+		// :chiri: game id
+		const char *g = SConfig::GetInstance().m_LocalCoreStartupParameter.m_strUniqueID.c_str();
+		g_vertex_manager->gameId = g[0] + (g[1] << 7) + (g[2] << 14) + (g[3] << 21) + (g[4] << 28) + (g[5] << 35);
 	}
 
 	#if defined(_M_X64) || _M_ARM
@@ -342,6 +350,11 @@ void FifoPlayerThread()
 	else
 	{
 		g_video_backend->Video_Prepare();
+
+		// :chiri: game id
+		const char *g = SConfig::GetInstance().m_LocalCoreStartupParameter.m_strUniqueID.c_str();
+		g_vertex_manager->gameId = g[0] + (g[1] << 7) + (g[2] << 14) + (g[3] << 21) + (g[4] << 28) + (g[5] << 35);
+
 		Common::SetCurrentThreadName("FIFO-GPU thread");
 	}
 
@@ -453,6 +466,10 @@ void EmuThread()
 		Common::SetCurrentThreadName("Video thread");
 
 		g_video_backend->Video_Prepare();
+
+		// :chiri: game id
+		const char *g = SConfig::GetInstance().m_LocalCoreStartupParameter.m_strUniqueID.c_str();
+		g_vertex_manager->gameId = g[0] + (g[1] << 7) + (g[2] << 14) + (g[3] << 21) + (g[4] << 28) + (g[5] << 35);
 
 		// Spawn the CPU thread
 		g_cpu_thread = std::thread(cpuThreadFunc);

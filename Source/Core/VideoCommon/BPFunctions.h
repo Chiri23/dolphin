@@ -31,8 +31,9 @@ void SetBlendMode();
 void SetDitherMode();
 void SetLogicOpMode();
 void SetColorMask();
+// :chiri: const removed.
 void CopyEFB(u32 dstAddr, unsigned int dstFormat, unsigned int srcFormat,
-	const EFBRectangle& srcRect, bool isIntensity, bool scaleByHalf);
+	EFBRectangle& srcRect, bool isIntensity, bool scaleByHalf);
 void ClearScreen(const EFBRectangle &rc);
 void OnPixelFormatChange();
 u8 *GetPointer(const u32 &address);

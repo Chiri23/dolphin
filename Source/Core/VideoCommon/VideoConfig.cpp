@@ -51,6 +51,10 @@ void VideoConfig::Load(const char *ini_file)
 	iniFile.Get("Settings", "UseXFB", &bUseXFB, 0);
 	iniFile.Get("Settings", "UseRealXFB", &bUseRealXFB, 0);
 	iniFile.Get("Settings", "SafeTextureCacheColorSamples", &iSafeTextureCache_ColorSamples,128);
+
+	// :chiri: hard coded hash size for fixes.
+	iSafeTextureCache_ColorSamples = 128;
+
 	iniFile.Get("Settings", "ShowFPS", &bShowFPS, false); // Settings
 	iniFile.Get("Settings", "LogFPSToFile", &bLogFPSToFile, false);
 	iniFile.Get("Settings", "ShowInputDisplay", &bShowInputDisplay, false);
@@ -143,6 +147,10 @@ void VideoConfig::GameIniLoad()
 	CHECK_SETTING("Video_Settings", "UseXFB", bUseXFB);
 	CHECK_SETTING("Video_Settings", "UseRealXFB", bUseRealXFB);
 	CHECK_SETTING("Video_Settings", "SafeTextureCacheColorSamples", iSafeTextureCache_ColorSamples);
+
+	// :chiri: hard coded hash size for fixes.
+	iSafeTextureCache_ColorSamples = 128;
+
 	CHECK_SETTING("Video_Settings", "DLOptimize", iCompileDLsLevel);
 	CHECK_SETTING("Video_Settings", "HiresTextures", bHiresTextures);
 	CHECK_SETTING("Video_Settings", "AnaglyphStereo", bAnaglyphStereo);
