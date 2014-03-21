@@ -2,22 +2,22 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h" // Common
-#include "ChunkFile.h"
-#include "../ConfigManager.h"
-#include "../CoreTiming.h"
-#include "SystemTimers.h"
+#include "Common/ChunkFile.h"
+#include "Common/Common.h"
+#include "Common/Thread.h"
 
-#include "StreamADPCM.h" // Core
-#include "DVDInterface.h"
-#include "../PowerPC/PowerPC.h"
-#include "ProcessorInterface.h"
-#include "Thread.h"
-#include "Memmap.h"
-#include "../VolumeHandler.h"
-#include "AudioInterface.h"
-#include "../Movie.h"
-#include "MMIO.h"
+#include "Core/ConfigManager.h"
+#include "Core/CoreTiming.h"
+#include "Core/Movie.h"
+#include "Core/VolumeHandler.h"
+#include "Core/HW/AudioInterface.h"
+#include "Core/HW/DVDInterface.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/MMIO.h"
+#include "Core/HW/ProcessorInterface.h"
+#include "Core/HW/StreamADPCM.h"
+#include "Core/HW/SystemTimers.h"
+#include "Core/PowerPC/PowerPC.h"
 
 // Disc transfer rate measured in bytes per second
 static const u32 DISC_TRANSFER_RATE_GC = 5 * 1024 * 1024;
@@ -317,15 +317,15 @@ void InsertDiscCallback(u64 userdata, int cyclesLate)
 	delete _FileName;
 }
 
-void ChangeDisc(const char* _newFileName)
+void ChangeDisc(const std::string& newFileName)
 {
-	std::string* _FileName = new std::string(_newFileName);
+	std::string* _FileName = new std::string(newFileName);
 	CoreTiming::ScheduleEvent_Threadsafe(0, ejectDisc);
 	CoreTiming::ScheduleEvent_Threadsafe(500000000, insertDisc, (u64)_FileName);
 	if (Movie::IsRecordingInput())
 	{
 		Movie::g_bDiscChange = true;
-		std::string fileName = _newFileName;
+		std::string fileName = newFileName;
 		auto sizeofpath = fileName.find_last_of("/\\") + 1;
 		if (fileName.substr(sizeofpath).length() > 40)
 		{
@@ -521,7 +521,7 @@ void UpdateInterrupts()
 
 void GenerateDIInterrupt(DI_InterruptType _DVDInterrupt)
 {
-	switch(_DVDInterrupt)
+	switch (_DVDInterrupt)
 	{
 	case INT_DEINT:  m_DISR.DEINT   = 1; break;
 	case INT_TCINT:  m_DISR.TCINT   = 1; break;
@@ -535,9 +535,9 @@ void GenerateDIInterrupt(DI_InterruptType _DVDInterrupt)
 void ExecuteCommand(UDICR& _DICR)
 {
 	// _dbg_assert_(DVDINTERFACE, _DICR.RW == 0); // only DVD to Memory
-	int GCAM = ((SConfig::GetInstance().m_SIDevice[0] == SIDEVICE_AM_BASEBOARD)
-		&& (SConfig::GetInstance().m_EXIDevice[2] == EXIDEVICE_AM_BASEBOARD))
-		? 1 : 0;
+	int GCAM = ((SConfig::GetInstance().m_SIDevice[0] == SIDEVICE_AM_BASEBOARD) &&
+	            (SConfig::GetInstance().m_EXIDevice[2] == EXIDEVICE_AM_BASEBOARD))
+	           ? 1 : 0;
 
 	if (GCAM)
 	{
@@ -929,15 +929,15 @@ void ExecuteCommand(UDICR& _DICR)
 	// Just for fun
 	case 0xFF:
 		{
-			if (m_DICMDBUF[0].Hex == 0xFF014D41
-				&& m_DICMDBUF[1].Hex == 0x54534849
-				&& m_DICMDBUF[2].Hex == 0x54410200)
+			if (m_DICMDBUF[0].Hex == 0xFF014D41 &&
+			    m_DICMDBUF[1].Hex == 0x54534849 &&
+			    m_DICMDBUF[2].Hex == 0x54410200)
 			{
 				INFO_LOG(DVDINTERFACE, "Unlock test 1 passed");
 			}
-			else if (m_DICMDBUF[0].Hex == 0xFF004456
-				&& m_DICMDBUF[1].Hex == 0x442D4741
-				&& m_DICMDBUF[2].Hex == 0x4D450300)
+			else if (m_DICMDBUF[0].Hex == 0xFF004456 &&
+			         m_DICMDBUF[1].Hex == 0x442D4741 &&
+			         m_DICMDBUF[2].Hex == 0x4D450300)
 			{
 				INFO_LOG(DVDINTERFACE, "Unlock test 2 passed");
 			}

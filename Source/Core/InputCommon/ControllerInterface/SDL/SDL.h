@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "../Device.h"
-
 #include <list>
 
 #include <SDL.h>
+
+#include "InputCommon/ControllerInterface/Device.h"
+
 
 #if SDL_VERSION_ATLEAST(1, 3, 0)
 	#define USE_SDL_HAPTIC
@@ -82,9 +83,9 @@ private:
 	class ConstantEffect : public Output
 	{
 	public:
-		std::string GetName() const;
+		std::string GetName() const override;
 		ConstantEffect(EffectIDState& effect) : m_effect(effect) {}
-		void SetState(ControlState state);
+		void SetState(ControlState state) override;
 	private:
 		EffectIDState& m_effect;
 	};
@@ -92,9 +93,9 @@ private:
 	class RampEffect : public Output
 	{
 	public:
-		std::string GetName() const;
+		std::string GetName() const override;
 		RampEffect(EffectIDState& effect) : m_effect(effect) {}
-		void SetState(ControlState state);
+		void SetState(ControlState state) override;
 	private:
 		EffectIDState& m_effect;
 	};
@@ -102,9 +103,9 @@ private:
 	class SineEffect : public Output
 	{
 	public:
-		std::string GetName() const;
+		std::string GetName() const override;
 		SineEffect(EffectIDState& effect) : m_effect(effect) {}
-		void SetState(ControlState state);
+		void SetState(ControlState state) override;
 	private:
 		EffectIDState& m_effect;
 	};
@@ -124,9 +125,9 @@ private:
 	class TriangleEffect : public Output
 	{
 	public:
-		std::string GetName() const;
+		std::string GetName() const override;
 		TriangleEffect(EffectIDState& effect) : m_effect(effect) {}
-		void SetState(ControlState state);
+		void SetState(ControlState state) override;
 	private:
 		EffectIDState& m_effect;
 	};

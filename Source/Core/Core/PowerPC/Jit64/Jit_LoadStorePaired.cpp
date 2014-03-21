@@ -5,14 +5,12 @@
 // TODO(ector): Tons of pshufb optimization of the loads/stores, for SSSE3+, possibly SSE4, only.
 // Should give a very noticeable speed boost to paired single heavy code.
 
-#include "Common.h"
-#include "CPUDetect.h"
+#include "Common/Common.h"
+#include "Common/CPUDetect.h"
 
-#include "Jit.h"
-#include "JitAsm.h"
-#include "JitRegCache.h"
-
-const u8 GC_ALIGNED16(pbswapShuffle2x4[16]) = {3, 2, 1, 0, 7, 6, 5, 4, 8, 9, 10, 11, 12, 13, 14, 15};
+#include "Core/PowerPC/Jit64/Jit.h"
+#include "Core/PowerPC/Jit64/JitAsm.h"
+#include "Core/PowerPC/Jit64/JitRegCache.h"
 
 // The big problem is likely instructions that set the quantizers in the same block.
 // We will have to break block after quantizers are written to.
@@ -21,12 +19,16 @@ void Jit64::psq_st(UGeckoInstruction inst)
 	INSTRUCTION_START
 	JITDISABLE(bJITLoadStorePairedOff)
 
-	if (js.memcheck) { Default(inst); return; }
+	if (js.memcheck)
+	{
+		FallBackToInterpreter(inst);
+		return;
+	}
 
 	if (!inst.RA)
 	{
 		// TODO: Support these cases if it becomes necessary.
-		Default(inst);
+		FallBackToInterpreter(inst);
 		return;
 	}
 
@@ -49,7 +51,7 @@ void Jit64::psq_st(UGeckoInstruction inst)
 	MOVZX(32, 16, EAX, M(&PowerPC::ppcState.spr[SPR_GQR0 + inst.I]));
 	MOVZX(32, 8, EDX, R(AL));
 	// FIXME: Fix ModR/M encoding to allow [EDX*4+disp32] without a base register!
-#ifdef _M_IX86
+#if _M_X86_32
 	int addr_scale = SCALE_4;
 #else
 	int addr_scale = SCALE_8;
@@ -73,11 +75,15 @@ void Jit64::psq_l(UGeckoInstruction inst)
 	INSTRUCTION_START
 	JITDISABLE(bJITLoadStorePairedOff)
 
-	if (js.memcheck) { Default(inst); return; }
+	if (js.memcheck)
+	{
+		FallBackToInterpreter(inst);
+		return;
+	}
 
 	if (!inst.RA)
 	{
-		Default(inst);
+		FallBackToInterpreter(inst);
 		return;
 	}
 
@@ -98,7 +104,7 @@ void Jit64::psq_l(UGeckoInstruction inst)
 	MOVZX(32, 8, EDX, R(AL));
 	if (inst.W)
 		OR(32, R(EDX), Imm8(8));
-#ifdef _M_IX86
+#if _M_X86_32
 	int addr_scale = SCALE_4;
 #else
 	int addr_scale = SCALE_8;

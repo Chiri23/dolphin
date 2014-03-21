@@ -33,26 +33,25 @@
 */
 // =============
 
-#include "WII_IPC_HLE_Device_es.h"
-
 // need to include this before polarssl/aes.h,
 // otherwise we may not get __STDC_FORMAT_MACROS
 #include <cinttypes>
 
-#include "../PowerPC/PowerPC.h"
-#include "../VolumeHandler.h"
-#include "FileUtil.h"
 #include <polarssl/aes.h>
-#include "ConfigManager.h"
 
-#include "../Boot/Boot_DOL.h"
-#include "NandPaths.h"
-#include "CommonPaths.h"
-#include "IPC_HLE/WII_IPC_HLE_Device_usb.h"
-#include "../Movie.h"
-#include "StringUtil.h"
+#include "Common/CommonPaths.h"
+#include "Common/FileUtil.h"
+#include "Common/NandPaths.h"
+#include "Common/StringUtil.h"
 
-#include "ec_wii.h"
+#include "Core/ConfigManager.h"
+#include "Core/ec_wii.h"
+#include "Core/Movie.h"
+#include "Core/VolumeHandler.h"
+#include "Core/Boot/Boot_DOL.h"
+#include "Core/IPC_HLE/WII_IPC_HLE_Device_es.h"
+#include "Core/IPC_HLE/WII_IPC_HLE_Device_usb.h"
+#include "Core/PowerPC/PowerPC.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -62,7 +61,7 @@ std::string CWII_IPC_HLE_Device_es::m_ContentFile;
 
 CWII_IPC_HLE_Device_es::CWII_IPC_HLE_Device_es(u32 _DeviceID, const std::string& _rDeviceName)
 	: IWII_IPC_HLE_Device(_DeviceID, _rDeviceName)
-	, m_pContentLoader(NULL)
+	, m_pContentLoader(nullptr)
 	, m_TitleID(-1)
 	, m_AccessIdentID(0x6000000)
 {
@@ -191,7 +190,7 @@ bool CWII_IPC_HLE_Device_es::Close(u32 _CommandAddress, bool _bForce)
 		delete pair.second.m_pFile;
 	}
 	m_ContentAccessMap.clear();
-	m_pContentLoader = NULL;
+	m_pContentLoader = nullptr;
 	m_TitleIDs.clear();
 	m_TitleID = -1;
 	m_AccessIdentID = 0x6000000;
@@ -215,7 +214,7 @@ u32 CWII_IPC_HLE_Device_es::OpenTitleContent(u32 CFD, u64 TitleID, u16 Index)
 
 	const DiscIO::SNANDContent* pContent = Loader.GetContentByIndex(Index);
 
-	if (pContent == NULL)
+	if (pContent == nullptr)
 	{
 		return 0xffffffff; //TODO: what is the correct error value here?
 	}
@@ -224,7 +223,7 @@ u32 CWII_IPC_HLE_Device_es::OpenTitleContent(u32 CFD, u64 TitleID, u16 Index)
 	Access.m_Position = 0;
 	Access.m_pContent = pContent;
 	Access.m_TitleID = TitleID;
-	Access.m_pFile = NULL;
+	Access.m_pFile = nullptr;
 
 	if (!pContent->m_pData)
 	{
@@ -394,7 +393,7 @@ bool CWII_IPC_HLE_Device_es::IOCtlV(u32 _CommandAddress)
 			}
 			SContentAccess& rContent = itr->second;
 
-			_dbg_assert_(WII_IPC_ES, rContent.m_pContent->m_pData != NULL);
+			_dbg_assert_(WII_IPC_ES, rContent.m_pContent->m_pData != nullptr);
 
 			u8* pDest = Memory::GetPointer(Addr);
 
@@ -804,7 +803,7 @@ bool CWII_IPC_HLE_Device_es::IOCtlV(u32 _CommandAddress)
 				TMDCnt += DiscIO::INANDContentLoader::TMD_HEADER_SIZE;
 				TMDCnt += (u32)Loader.GetContentSize() * DiscIO::INANDContentLoader::CONTENT_HEADER_SIZE;
 			}
-			if(Buffer.NumberPayloadBuffer)
+			if (Buffer.NumberPayloadBuffer)
 				Memory::Write_U32(TMDCnt, Buffer.PayloadBuffer[0].m_Address);
 
 			Memory::Write_U32(0, _CommandAddress + 0x4);
@@ -923,7 +922,7 @@ bool CWII_IPC_HLE_Device_es::IOCtlV(u32 _CommandAddress)
 						}
 						else
 						{
-							pDolLoader.reset(new CDolLoader(pContent->m_Filename.c_str()));
+							pDolLoader.reset(new CDolLoader(pContent->m_Filename));
 						}
 						pDolLoader->Load(); // TODO: Check why sysmenu does not load the DOL correctly
 						PC = pDolLoader->GetEntryPoint() | 0x80000000;
@@ -954,7 +953,7 @@ bool CWII_IPC_HLE_Device_es::IOCtlV(u32 _CommandAddress)
 				for (unsigned int i = 0; i < size; i++)
 					wiiMoteConnected[i] = s_Usb->m_WiiMotes[i].IsConnected();
 
-				std::string tContentFile(m_ContentFile.c_str());
+				std::string tContentFile(m_ContentFile);
 
 				WII_IPC_HLE_Interface::Reset(true);
 				WII_IPC_HLE_Interface::Init();
@@ -1112,7 +1111,7 @@ u32 CWII_IPC_HLE_Device_es::ES_DIVerify(u8* _pTMD, u32 _sz)
 	if (Movie::IsRecordingInput())
 	{
 		// TODO: Check for the actual save data
-		if (File::Exists((savePath + "banner.bin").c_str()))
+		if (File::Exists(savePath + "banner.bin"))
 			Movie::g_bClearSave = false;
 		else
 			Movie::g_bClearSave = true;
@@ -1121,38 +1120,38 @@ u32 CWII_IPC_HLE_Device_es::ES_DIVerify(u8* _pTMD, u32 _sz)
 	// TODO: Force the game to save to another location, instead of moving the user's save.
 	if (Movie::IsPlayingInput() && Movie::IsConfigSaved() && Movie::IsStartingFromClearSave())
 	{
-		if (File::Exists((savePath + "banner.bin").c_str()))
+		if (File::Exists(savePath + "banner.bin"))
 		{
-			if (File::Exists((savePath + "../backup/").c_str()))
+			if (File::Exists(savePath + "../backup/"))
 			{
 				// The last run of this game must have been to play back a movie, so their save is already backed up.
-				File::DeleteDirRecursively(savePath.c_str());
+				File::DeleteDirRecursively(savePath);
 			}
 			else
 			{
 				#ifdef _WIN32
 					MoveFile(UTF8ToTStr(savePath).c_str(), UTF8ToTStr(savePath + "../backup/").c_str());
 				#else
-					File::CopyDir(savePath.c_str(),(savePath + "../backup/").c_str());
-					File::DeleteDirRecursively(savePath.c_str());
+					File::CopyDir(savePath, savePath + "../backup/");
+					File::DeleteDirRecursively(savePath);
 				#endif
 			}
 		}
 	}
-	else if (File::Exists((savePath + "../backup/").c_str()))
+	else if (File::Exists(savePath + "../backup/"))
 	{
 		// Delete the save made by a previous movie, and copy back the user's save.
-		if (File::Exists((savePath + "banner.bin").c_str()))
+		if (File::Exists(savePath + "banner.bin"))
 			File::DeleteDirRecursively(savePath);
 		#ifdef _WIN32
 			MoveFile(UTF8ToTStr(savePath + "../backup/").c_str(), UTF8ToTStr(savePath).c_str());
 		#else
-			File::CopyDir((savePath + "../backup/").c_str(), savePath.c_str());
-			File::DeleteDirRecursively((savePath + "../backup/").c_str());
+			File::CopyDir(savePath + "../backup/", savePath);
+			File::DeleteDirRecursively(savePath + "../backup/");
 		#endif
 	}
 
-	if(!File::Exists(tmdPath))
+	if (!File::Exists(tmdPath))
 	{
 		File::IOFile _pTMDFile(tmdPath, "wb");
 		if (!_pTMDFile.WriteBytes(_pTMD, _sz))

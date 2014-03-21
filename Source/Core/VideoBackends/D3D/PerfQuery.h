@@ -1,7 +1,8 @@
 #pragma once
 
 #include <array>
-#include "PerfQueryBase.h"
+
+#include "VideoCommon/PerfQueryBase.h"
 
 namespace DX11 {
 
@@ -11,12 +12,12 @@ public:
 	PerfQuery();
 	~PerfQuery();
 
-	void EnableQuery(PerfQueryGroup type);
-	void DisableQuery(PerfQueryGroup type);
-	void ResetQuery();
-	u32 GetQueryResult(PerfQueryType type);
-	void FlushResults();
-	bool IsFlushed() const;
+	void EnableQuery(PerfQueryGroup type) override;
+	void DisableQuery(PerfQueryGroup type) override;
+	void ResetQuery() override;
+	u32 GetQueryResult(PerfQueryType type) override;
+	void FlushResults() override;
+	bool IsFlushed() const override;
 
 private:
 	struct ActiveQuery

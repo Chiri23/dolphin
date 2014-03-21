@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include "IR.h"
-#include "../PowerPC.h"
-#include "../PPCAnalyst.h"
-#include "../PPCTables.h"
-#include "../JitCommon/JitBase.h"
-#include "../../ConfigManager.h"
-#include "../../Core.h"
-#include "../../CoreTiming.h"
-#include "../../HW/GPFifo.h"
-#include "../../HW/Memmap.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/HW/GPFifo.h"
+#include "Core/HW/Memmap.h"
+#include "Core/PowerPC/PowerPC.h"
+#include "Core/PowerPC/PPCAnalyst.h"
+#include "Core/PowerPC/PPCTables.h"
+#include "Core/PowerPC/JitCommon/JitBase.h"
+#include "Core/PowerPC/JitILCommon/IR.h"
 
 class JitILBase : public JitBase
 {
@@ -39,7 +39,7 @@ public:
 
 	// OPCODES
 	virtual void unknown_instruction(UGeckoInstruction inst) = 0;
-	virtual void Default(UGeckoInstruction inst) = 0;
+	virtual void FallBackToInterpreter(UGeckoInstruction inst) = 0;
 	virtual void DoNothing(UGeckoInstruction inst) = 0;
 	virtual void HLEFunction(UGeckoInstruction inst) = 0;
 

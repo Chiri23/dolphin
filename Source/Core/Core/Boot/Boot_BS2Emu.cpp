@@ -2,27 +2,26 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "CommonPaths.h"
-#include "FileUtil.h"
-#include "NandPaths.h"
+#include "Common/Common.h"
+#include "Common/CommonPaths.h"
+#include "Common/FileUtil.h"
+#include "Common/NandPaths.h"
+#include "Common/SettingsHandler.h"
 
-#include "../PowerPC/PowerPC.h"
-#include "../Core.h"
-#include "../HW/EXI_DeviceIPL.h"
-#include "../HW/Memmap.h"
-#include "../HW/DVDInterface.h"
-#include "../HW/CPU.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/MemTools.h"
+#include "Core/PatchEngine.h"
+#include "Core/VolumeHandler.h"
+#include "Core/Boot/Boot.h"
+#include "Core/HLE/HLE.h"
+#include "Core/HW/CPU.h"
+#include "Core/HW/DVDInterface.h"
+#include "Core/HW/EXI_DeviceIPL.h"
+#include "Core/HW/Memmap.h"
+#include "Core/PowerPC/PowerPC.h"
 
-#include "../VolumeHandler.h"
-#include "../PatchEngine.h"
-#include "../MemTools.h"
-
-#include "../ConfigManager.h"
-#include "VolumeCreator.h"
-#include "Boot.h"
-#include "HLE/HLE.h"
-#include "SettingsHandler.h"
+#include "DiscIO/VolumeCreator.h"
 
 void CBoot::RunFunction(u32 _iAddr)
 {
@@ -138,7 +137,7 @@ bool CBoot::EmulatedBS2_GC()
 		INFO_LOG(MASTER_LOG, "DVDRead: offset: %08x   memOffset: %08x   length: %i", iDVDOffset, iRamAddress, iLength);
 		DVDInterface::DVDRead(iDVDOffset, iRamAddress, iLength);
 
-	} while(PowerPC::ppcState.gpr[3] != 0x00);
+	} while (PowerPC::ppcState.gpr[3] != 0x00);
 
 	// iAppLoaderClose
 	DEBUG_LOG(MASTER_LOG, "call iAppLoaderClose");
@@ -378,7 +377,7 @@ bool CBoot::EmulatedBS2_Wii()
 
 			INFO_LOG(BOOT, "DVDRead: offset: %08x   memOffset: %08x   length: %i", iDVDOffset, iRamAddress, iLength);
 			DVDInterface::DVDRead(iDVDOffset, iRamAddress, iLength);
-		} while(PowerPC::ppcState.gpr[3] != 0x00);
+		} while (PowerPC::ppcState.gpr[3] != 0x00);
 
 		// iAppLoaderClose
 		DEBUG_LOG(BOOT, "Run iAppLoaderClose");
@@ -393,7 +392,6 @@ bool CBoot::EmulatedBS2_Wii()
 		Memory::Write_U32(firmwareVer ? firmwareVer : 0x00090204, 0x00003140);
 
 		// Load patches and run startup patches
-		std::string gameID = VolumeHandler::GetVolume()->GetUniqueID();
 		PatchEngine::LoadPatches();
 
 		// return

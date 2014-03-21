@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "WII_IPC_HLE.h"
-#include "WII_IPC_HLE_Device.h"
 #include <libusb.h>
-#include "Thread.h"
 #include <list>
+
+#include "Common/Thread.h"
+#include "Core/IPC_HLE/WII_IPC_HLE.h"
+#include "Core/IPC_HLE/WII_IPC_HLE_Device.h"
 
 #define HID_ID_MASK 0x0000FFFFFFFFFFFF
 #define MAX_HID_INTERFACES 1
@@ -24,12 +25,12 @@ public:
 
 	virtual ~CWII_IPC_HLE_Device_hid();
 
-	virtual bool Open(u32 _CommandAddress, u32 _Mode);
-	virtual bool Close(u32 _CommandAddress, bool _bForce);
-	virtual u32 Update();
+	virtual bool Open(u32 _CommandAddress, u32 _Mode) override;
+	virtual bool Close(u32 _CommandAddress, bool _bForce) override;
+	virtual u32 Update() override;
 
-	virtual bool IOCtlV(u32 _CommandAddress);
-	virtual bool IOCtl(u32 _CommandAddress);
+	virtual bool IOCtlV(u32 _CommandAddress) override;
+	virtual bool IOCtl(u32 _CommandAddress) override;
 
 private:
 	enum

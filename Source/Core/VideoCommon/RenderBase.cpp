@@ -12,36 +12,37 @@
 // Next frame, that one is scanned out and the other one gets the copy. = double buffering.
 // ---------------------------------------------------------------------------------------------
 
-
-#include "RenderBase.h"
-#include "Atomic.h"
-#include "BPMemory.h"
-#include "CommandProcessor.h"
-#include "CPMemory.h"
-#include "MainBase.h"
-#include "VideoConfig.h"
-#include "FramebufferManagerBase.h"
-#include "TextureCacheBase.h"
-#include "Fifo.h"
-#include "OpcodeDecoding.h"
-#include "Timer.h"
-#include "StringUtil.h"
-#include "Host.h"
-#include "XFMemory.h"
-#include "FifoPlayer/FifoRecorder.h"
-#include "AVIDump.h"
-#include "Debugger.h"
-#include "Statistics.h"
-#include "Core.h"
-
 #include <cmath>
 #include <string>
+
+#include "Common/Atomic.h"
+#include "Common/StringUtil.h"
+#include "Common/Timer.h"
+
+#include "Core/Core.h"
+#include "Core/Host.h"
+#include "Core/FifoPlayer/FifoRecorder.h"
+
+#include "VideoCommon/AVIDump.h"
+#include "VideoCommon/BPMemory.h"
+#include "VideoCommon/CommandProcessor.h"
+#include "VideoCommon/CPMemory.h"
+#include "VideoCommon/Debugger.h"
+#include "VideoCommon/Fifo.h"
+#include "VideoCommon/FramebufferManagerBase.h"
+#include "VideoCommon/MainBase.h"
+#include "VideoCommon/OpcodeDecoding.h"
+#include "VideoCommon/RenderBase.h"
+#include "VideoCommon/Statistics.h"
+#include "VideoCommon/TextureCacheBase.h"
+#include "VideoCommon/VideoConfig.h"
+#include "VideoCommon/XFMemory.h"
 
 // TODO: Move these out of here.
 int frameCount;
 int OSDChoice, OSDTime;
 
-Renderer *g_renderer = NULL;
+Renderer *g_renderer = nullptr;
 
 std::mutex Renderer::s_criticalScreenshot;
 std::string Renderer::s_sScreenshotName;
@@ -237,7 +238,7 @@ bool Renderer::CalculateTargetSize(unsigned int framebuffer_width, unsigned int 
 	return false;
 }
 
-void Renderer::SetScreenshot(const char *filename)
+void Renderer::SetScreenshot(const std::string& filename)
 {
 	std::lock_guard<std::mutex> lk(s_criticalScreenshot);
 	s_sScreenshotName = filename;
@@ -287,7 +288,7 @@ void Renderer::DrawDebugText()
 	}
 
 	const char* ar_text = "";
-	switch(g_ActiveConfig.iAspectRatio)
+	switch (g_ActiveConfig.iAspectRatio)
 	{
 	case ASPECT_AUTO:
 		ar_text = "Auto";
@@ -342,11 +343,11 @@ void Renderer::DrawDebugText()
 	}
 
 	// Render a shadow
-	g_renderer->RenderText(final_cyan.c_str(), 21, 21, 0xDD000000);
-	g_renderer->RenderText(final_yellow.c_str(), 21, 21, 0xDD000000);
+	g_renderer->RenderText(final_cyan, 21, 21, 0xDD000000);
+	g_renderer->RenderText(final_yellow, 21, 21, 0xDD000000);
 	//and then the text
-	g_renderer->RenderText(final_cyan.c_str(), 20, 20, 0xFF00FFFF);
-	g_renderer->RenderText(final_yellow.c_str(), 20, 20, 0xFFFFFF00);
+	g_renderer->RenderText(final_cyan, 20, 20, 0xFF00FFFF);
+	g_renderer->RenderText(final_yellow, 20, 20, 0xFFFFFF00);
 }
 
 // TODO: remove

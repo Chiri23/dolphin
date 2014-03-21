@@ -7,8 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "Common.h"
-#include "StringUtil.h"
+#include "Common/Common.h"
 
 namespace DiscIO
 {

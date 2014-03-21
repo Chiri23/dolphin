@@ -8,33 +8,34 @@
 //#define JIT_LOG_GPR     // Enables logging of the PPC general purpose regs
 //#define JIT_LOG_FPR     // Enables logging of the PPC floating point regs
 
-#include "JitAsmCommon.h"
-#include "JitCache.h"
-#include "Jit_Util.h"      // for EmuCodeBlock
-#include "JitBackpatch.h"  // for EmuCodeBlock
-#include "x64ABI.h"
-#include "x64Analyzer.h"
-#include "x64Emitter.h"
-#include "../CPUCoreBase.h"
-#include "../PowerPC.h"
-#include "../PPCAnalyst.h"
-#include "../PPCTables.h"
-#include "../../Core.h"
-#include "../../CoreTiming.h"
-#include "../../HW/GPFifo.h"
-#include "../../HW/Memmap.h"
-
 #include <unordered_set>
 
+#include "Common/x64ABI.h"
+#include "Common/x64Analyzer.h"
+#include "Common/x64Emitter.h"
+
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/HW/GPFifo.h"
+#include "Core/HW/Memmap.h"
+#include "Core/PowerPC/CPUCoreBase.h"
+#include "Core/PowerPC/PowerPC.h"
+#include "Core/PowerPC/PPCAnalyst.h"
+#include "Core/PowerPC/PPCTables.h"
+#include "Core/PowerPC/JitCommon/Jit_Util.h"
+#include "Core/PowerPC/JitCommon/JitAsmCommon.h"
+#include "Core/PowerPC/JitCommon/JitBackpatch.h"
+#include "Core/PowerPC/JitCommon/JitCache.h"
+
 // Use these to control the instruction selection
-// #define INSTRUCTION_START Default(inst); return;
+// #define INSTRUCTION_START FallBackToInterpreter(inst); return;
 // #define INSTRUCTION_START PPCTables::CountInstruction(inst);
 #define INSTRUCTION_START
 
 #define JITDISABLE(setting)                     \
 	if (Core::g_CoreStartupParameter.bJITOff || \
 		Core::g_CoreStartupParameter.setting)   \
-	{ Default(inst); return; }
+	{ FallBackToInterpreter(inst); return; }
 
 class JitBase : public CPUCoreBase
 {

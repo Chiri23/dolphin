@@ -2,33 +2,31 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Globals.h"
-
 #include <fstream>
 #include <vector>
 
-#include "Fifo.h"
+#include "Common/FileUtil.h"
+#include "Common/MemoryUtil.h"
 
-#include "DriverDetails.h"
-#include "VideoConfig.h"
-#include "Statistics.h"
-#include "MemoryUtil.h"
-#include "Render.h"
-#include "ImageWrite.h"
-#include "BPMemory.h"
-#include "TextureCache.h"
-#include "PixelShaderManager.h"
-#include "VertexShaderManager.h"
-#include "ProgramShaderCache.h"
-#include "VertexShaderGen.h"
-#include "VertexLoader.h"
-#include "VertexManager.h"
-#include "IndexGenerator.h"
-#include "FileUtil.h"
-#include "StreamBuffer.h"
-#include "Render.h"
+#include "VideoBackends/OGL/Globals.h"
+#include "VideoBackends/OGL/main.h"
+#include "VideoBackends/OGL/ProgramShaderCache.h"
+#include "VideoBackends/OGL/Render.h"
+#include "VideoBackends/OGL/StreamBuffer.h"
+#include "VideoBackends/OGL/TextureCache.h"
+#include "VideoBackends/OGL/VertexManager.h"
 
-#include "main.h"
+#include "VideoCommon/BPMemory.h"
+#include "VideoCommon/DriverDetails.h"
+#include "VideoCommon/Fifo.h"
+#include "VideoCommon/ImageWrite.h"
+#include "VideoCommon/IndexGenerator.h"
+#include "VideoCommon/PixelShaderManager.h"
+#include "VideoCommon/Statistics.h"
+#include "VideoCommon/VertexLoader.h"
+#include "VideoCommon/VertexShaderGen.h"
+#include "VideoCommon/VertexShaderManager.h"
+#include "VideoCommon/VideoConfig.h"
 
 // internal state for loading vertices
 extern NativeVertexFormat *g_nativeVertexFmt;
@@ -62,7 +60,7 @@ void VertexManager::CreateDeviceObjects()
 	s_indexBuffer = StreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, MAX_IBUFFER_SIZE);
 	m_index_buffers = s_indexBuffer->m_buffer;
 
-	m_CurrentVertexFmt = NULL;
+	m_CurrentVertexFmt = nullptr;
 	m_last_vao = 0;
 }
 
@@ -108,7 +106,7 @@ void VertexManager::Draw(u32 stride)
 	u32 max_index = IndexGenerator::GetNumVerts();
 	GLenum primitive_mode = 0;
 
-	switch(current_primitive_type)
+	switch (current_primitive_type)
 	{
 		case PRIMITIVE_POINTS:
 			primitive_mode = GL_POINTS;
@@ -121,10 +119,10 @@ void VertexManager::Draw(u32 stride)
 			break;
 	}
 
-	if(g_ogl_config.bSupportsGLBaseVertex) {
-		glDrawRangeElementsBaseVertex(primitive_mode, 0, max_index, index_size, GL_UNSIGNED_SHORT, (u8*)NULL+s_index_offset, (GLint)s_baseVertex);
+	if (g_ogl_config.bSupportsGLBaseVertex) {
+		glDrawRangeElementsBaseVertex(primitive_mode, 0, max_index, index_size, GL_UNSIGNED_SHORT, (u8*)nullptr+s_index_offset, (GLint)s_baseVertex);
 	} else {
-		glDrawRangeElements(primitive_mode, 0, max_index, index_size, GL_UNSIGNED_SHORT, (u8*)NULL+s_index_offset);
+		glDrawRangeElements(primitive_mode, 0, max_index, index_size, GL_UNSIGNED_SHORT, (u8*)nullptr+s_index_offset);
 	}
 	INCSTAT(stats.thisFrame.numIndexedDrawCalls);
 }
@@ -134,7 +132,7 @@ void VertexManager::vFlush(bool useDstAlpha)
 	GLVertexFormat *nativeVertexFmt = (GLVertexFormat*)g_nativeVertexFmt;
 	u32 stride  = nativeVertexFmt->GetVertexStride();
 
-	if(m_last_vao != nativeVertexFmt->VAO) {
+	if (m_last_vao != nativeVertexFmt->VAO) {
 		glBindVertexArray(nativeVertexFmt->VAO);
 		m_last_vao = nativeVertexFmt->VAO;
 	}
@@ -145,19 +143,11 @@ void VertexManager::vFlush(bool useDstAlpha)
 	// Makes sure we can actually do Dual source blending
 	bool dualSourcePossible = g_ActiveConfig.backend_info.bSupportsDualSourceBlend;
 
-	// finally bind
-	if (dualSourcePossible)
+	// If host supports GL_ARB_blend_func_extended, we can do dst alpha in
+	// the same pass as regular rendering.
+	if (useDstAlpha && dualSourcePossible)
 	{
-		if (useDstAlpha)
-		{
-			// If host supports GL_ARB_blend_func_extended, we can do dst alpha in
-			// the same pass as regular rendering.
-			ProgramShaderCache::SetShader(DSTALPHA_DUAL_SOURCE_BLEND, g_nativeVertexFmt->m_components);
-		}
-		else
-		{
-			ProgramShaderCache::SetShader(DSTALPHA_NONE,g_nativeVertexFmt->m_components);
-		}
+		ProgramShaderCache::SetShader(DSTALPHA_DUAL_SOURCE_BLEND, g_nativeVertexFmt->m_components);
 	}
 	else
 	{
@@ -168,8 +158,7 @@ void VertexManager::vFlush(bool useDstAlpha)
 	ProgramShaderCache::UploadConstants();
 
 	// setup the pointers
-	if (g_nativeVertexFmt)
-		g_nativeVertexFmt->SetupVertexPointers();
+	g_nativeVertexFmt->SetupVertexPointers();
 	GL_REPORT_ERRORD();
 
 	Draw(stride);

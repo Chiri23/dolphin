@@ -23,22 +23,22 @@
 #include <string>
 #include <vector>
 
-#include "CommonTypes.h"
-#include "CommonPaths.h"
-#include "IniFile.h"
-#include "BootManager.h"
-#include "Volume.h"
-#include "VolumeCreator.h"
-#include "ConfigManager.h"
-#include "SysConf.h"
-#include "Core.h"
-#include "Host.h"
-#include "VideoBackendBase.h"
-#include "Movie.h"
-#include "NetPlayProto.h"
-#include "HW/WiimoteReal/WiimoteReal.h"
-#include "HW/SI.h"
-#include "HW/EXI.h"
+#include "Common/CommonPaths.h"
+#include "Common/CommonTypes.h"
+#include "Common/IniFile.h"
+#include "Common/SysConf.h"
+#include "Core/BootManager.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/Host.h"
+#include "Core/Movie.h"
+#include "Core/NetPlayProto.h"
+#include "Core/HW/EXI.h"
+#include "Core/HW/SI.h"
+#include "Core/HW/WiimoteReal/WiimoteReal.h"
+#include "DiscIO/Volume.h"
+#include "DiscIO/VolumeCreator.h"
+#include "VideoCommon/VideoBackendBase.h"
 
 namespace BootManager
 {
@@ -48,14 +48,14 @@ namespace BootManager
 struct ConfigCache
 {
 	bool valid, bCPUThread, bSkipIdle, bEnableFPRF, bMMU, bDCBZOFF, m_EnableJIT, bDSPThread,
-		bVBeamSpeedHack, bSyncGPU, bFastDiscSpeed, bMergeBlocks, bDSPHLE, bHLE_BS2, bTLBHack, bUseFPS;
+	     bVBeamSpeedHack, bSyncGPU, bFastDiscSpeed, bMergeBlocks, bDSPHLE, bHLE_BS2, bTLBHack;
 	int iCPUCore, Volume;
 	int iWiimoteSource[MAX_BBMOTES];
 	SIDevices Pads[MAX_SI_CHANNELS];
-	unsigned int framelimit;
+	unsigned int framelimit, frameSkip;
 	TEXIDevices m_EXIDevice[MAX_EXI_CHANNELS];
 	std::string strBackend, sBackend;
-	bool bSetFramelimit, bSetEXIDevice[MAX_EXI_CHANNELS], bSetVolume, bSetPads[MAX_SI_CHANNELS], bSetWiimoteSource[MAX_BBMOTES];
+	bool bSetFramelimit, bSetEXIDevice[MAX_EXI_CHANNELS], bSetVolume, bSetPads[MAX_SI_CHANNELS], bSetWiimoteSource[MAX_BBMOTES], bSetFrameSkip;
 };
 static ConfigCache config_cache;
 
@@ -75,6 +75,9 @@ bool BootCore(const std::string& _rFilename)
 	StartUp.bRunCompareServer = false;
 
 	StartUp.hInstance = Host_GetInstance();
+
+	// This is saved seperately from everything because it can be changed in SConfig::AutoSetup()
+	config_cache.bHLE_BS2 = StartUp.bHLE_BS2;
 
 	// If for example the ISO file is bad we return here
 	if (!StartUp.AutoSetup(SCoreStartupParameter::BOOT_DEFAULT))
@@ -108,12 +111,12 @@ bool BootCore(const std::string& _rFilename)
 		config_cache.bMergeBlocks = StartUp.bMergeBlocks;
 		config_cache.bDSPHLE = StartUp.bDSPHLE;
 		config_cache.strBackend = StartUp.m_strVideoBackend;
-		config_cache.bHLE_BS2 = StartUp.bHLE_BS2;
-		config_cache.m_EnableJIT = SConfig::GetInstance().m_EnableJIT;
+		config_cache.m_EnableJIT = SConfig::GetInstance().m_DSPEnableJIT;
 		config_cache.bDSPThread = StartUp.bDSPThread;
 		config_cache.Volume = SConfig::GetInstance().m_Volume;
 		config_cache.sBackend = SConfig::GetInstance().sBackend;
 		config_cache.framelimit = SConfig::GetInstance().m_Framelimit;
+		config_cache.frameSkip = SConfig::GetInstance().m_FrameSkip;
 		for (unsigned int i = 0; i < MAX_BBMOTES; ++i)
 		{
 			config_cache.iWiimoteSource[i] = g_wiimote_sources[i];
@@ -130,6 +133,7 @@ bool BootCore(const std::string& _rFilename)
 		std::fill_n(config_cache.bSetPads, (int)MAX_SI_CHANNELS, false);
 		std::fill_n(config_cache.bSetEXIDevice, (int)MAX_EXI_CHANNELS, false);
 		config_cache.bSetFramelimit = false;
+		config_cache.bSetFrameSkip = false;
 
 		// General settings
 		game_ini.Get("Core", "CPUThread",        &StartUp.bCPUThread, StartUp.bCPUThread);
@@ -149,9 +153,14 @@ bool BootCore(const std::string& _rFilename)
 		game_ini.Get("Core", "HLE_BS2",          &StartUp.bHLE_BS2, StartUp.bHLE_BS2);
 		if (game_ini.Get("Core", "FrameLimit",   &SConfig::GetInstance().m_Framelimit, SConfig::GetInstance().m_Framelimit))
 			config_cache.bSetFramelimit = true;
+		if (game_ini.Get("Core", "FrameSkip",    &SConfig::GetInstance().m_FrameSkip))
+		{
+			config_cache.bSetFrameSkip = true;
+			Movie::SetFrameSkipping(SConfig::GetInstance().m_FrameSkip);
+		}
 		if (game_ini.Get("DSP", "Volume",        &SConfig::GetInstance().m_Volume, SConfig::GetInstance().m_Volume))
 			config_cache.bSetVolume = true;
-		game_ini.Get("DSP", "EnableJIT",         &SConfig::GetInstance().m_EnableJIT, SConfig::GetInstance().m_EnableJIT);
+		game_ini.Get("DSP", "EnableJIT",         &SConfig::GetInstance().m_DSPEnableJIT, SConfig::GetInstance().m_DSPEnableJIT);
 		game_ini.Get("DSP", "Backend",           &SConfig::GetInstance().sBackend, SConfig::GetInstance().sBackend);
 		VideoBackend::ActivateBackend(StartUp.m_strVideoBackend);
 
@@ -216,7 +225,7 @@ bool BootCore(const std::string& _rFilename)
 		StartUp.bDSPHLE = g_NetPlaySettings.m_DSPHLE;
 		StartUp.bEnableMemcardSaving = g_NetPlaySettings.m_WriteToMemcard;
 		StartUp.iCPUCore = g_NetPlaySettings.m_CPUcore;
-		SConfig::GetInstance().m_EnableJIT = g_NetPlaySettings.m_DSPEnableJIT;
+		SConfig::GetInstance().m_DSPEnableJIT = g_NetPlaySettings.m_DSPEnableJIT;
 		SConfig::GetInstance().m_EXIDevice[0] = g_NetPlaySettings.m_EXIDevice[0];
 		SConfig::GetInstance().m_EXIDevice[1] = g_NetPlaySettings.m_EXIDevice[1];
 		config_cache.bSetEXIDevice[0] = true;
@@ -261,11 +270,16 @@ void Stop()
 		VideoBackend::ActivateBackend(StartUp.m_strVideoBackend);
 		StartUp.bHLE_BS2 = config_cache.bHLE_BS2;
 		SConfig::GetInstance().sBackend = config_cache.sBackend;
-		SConfig::GetInstance().m_EnableJIT = config_cache.m_EnableJIT;
+		SConfig::GetInstance().m_DSPEnableJIT = config_cache.m_EnableJIT;
 
 		// Only change these back if they were actually set by game ini, since they can be changed while a game is running.
 		if (config_cache.bSetFramelimit)
 			SConfig::GetInstance().m_Framelimit = config_cache.framelimit;
+		if (config_cache.bSetFrameSkip)
+		{
+			SConfig::GetInstance().m_FrameSkip = config_cache.frameSkip;
+			Movie::SetFrameSkipping(config_cache.frameSkip);
+		}
 		if (config_cache.bSetVolume)
 			SConfig::GetInstance().m_Volume = config_cache.Volume;
 

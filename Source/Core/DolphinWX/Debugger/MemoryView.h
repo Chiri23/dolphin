@@ -4,9 +4,13 @@
 
 #pragma once
 
-#include "DebuggerUIUtil.h"
-#include "Common.h"
-#include "DebugInterface.h"
+#include <wx/control.h>
+#include <wx/event.h>
+
+#include "Common/CommonTypes.h"
+
+class DebugInterface;
+class wxWindow;
 
 class CMemoryView : public wxControl
 {

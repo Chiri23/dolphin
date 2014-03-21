@@ -22,14 +22,15 @@
 #include <string>
 #include <vector>
 
-#include "Common.h"
-#include "StringUtil.h"
-#include "HW/Memmap.h"
-#include "ActionReplay.h"
-#include "Core.h"
-#include "ARDecrypt.h"
-#include "LogManager.h"
-#include "ConfigManager.h"
+#include "Common/Common.h"
+#include "Common/LogManager.h"
+#include "Common/StringUtil.h"
+
+#include "Core/ActionReplay.h"
+#include "Core/ARDecrypt.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/HW/Memmap.h"
 
 namespace ActionReplay
 {
@@ -71,7 +72,7 @@ enum
 };
 
 // pointer to the code currently being run, (used by log messages that include the code name)
-static ARCode const* current_code = NULL;
+static ARCode const* current_code = nullptr;
 
 static bool b_RanOnce = false;
 static std::vector<ARCode> arCodes;
@@ -99,14 +100,14 @@ struct ARAddr
 };
 
 void LogInfo(const char *format, ...);
-bool Subtype_RamWriteAndFill(const ARAddr addr, const u32 data);
-bool Subtype_WriteToPointer(const ARAddr addr, const u32 data);
-bool Subtype_AddCode(const ARAddr addr, const u32 data);
-bool Subtype_MasterCodeAndWriteToCCXXXXXX(const ARAddr addr, const u32 data);
-bool ZeroCode_FillAndSlide(const u32 val_last, const ARAddr addr, const u32 data);
-bool ZeroCode_MemoryCopy(const u32 val_last, const ARAddr addr, const u32 data);
-bool NormalCode(const ARAddr addr, const u32 data);
-bool ConditionalCode(const ARAddr addr, const u32 data, int* const pSkipCount);
+bool Subtype_RamWriteAndFill(const ARAddr& addr, const u32 data);
+bool Subtype_WriteToPointer(const ARAddr& addr, const u32 data);
+bool Subtype_AddCode(const ARAddr& addr, const u32 data);
+bool Subtype_MasterCodeAndWriteToCCXXXXXX(const ARAddr& addr, const u32 data);
+bool ZeroCode_FillAndSlide(const u32 val_last, const ARAddr& addr, const u32 data);
+bool ZeroCode_MemoryCopy(const u32 val_last, const ARAddr& addr, const u32 data);
+bool NormalCode(const ARAddr& addr, const u32 data);
+bool ConditionalCode(const ARAddr& addr, const u32 data, int* const pSkipCount);
 bool CompareValues(const u32 val1, const u32 val2, const int type);
 
 // ----------------------
@@ -114,16 +115,16 @@ bool CompareValues(const u32 val1, const u32 val2, const int type);
 void LoadCodes(const IniFile& globalIni, const IniFile& localIni, bool forceLoad)
 {
 	// Parses the Action Replay section of a game ini file.
-	if (!SConfig::GetInstance().m_LocalCoreStartupParameter.bEnableCheats
-		&& !forceLoad)
+	if (!SConfig::GetInstance().m_LocalCoreStartupParameter.bEnableCheats &&
+		!forceLoad)
 		return;
 
 	arCodes.clear();
 
 	std::vector<std::string> enabledLines;
 	std::set<std::string> enabledNames;
-	localIni.GetLines("ActionReplay_Enabled", enabledLines);
-	for (auto& line : enabledLines)
+	localIni.GetLines("ActionReplay_Enabled", &enabledLines);
+	for (const std::string& line : enabledLines)
 	{
 		if (line.size() != 0 && line[0] == '$')
 		{
@@ -139,12 +140,14 @@ void LoadCodes(const IniFile& globalIni, const IniFile& localIni, bool forceLoad
 		std::vector<std::string> encryptedLines;
 		ARCode currentCode;
 
-		ini->GetLines("ActionReplay", lines);
+		ini->GetLines("ActionReplay", &lines);
 
-		for (std::string line : lines)
+		for (const std::string& line : lines)
 		{
 			if (line.empty())
+			{
 				continue;
+			}
 
 			std::vector<std::string> pieces;
 
@@ -282,13 +285,10 @@ bool RunCode(const ARCode &arcode)
 	LogInfo("Code Name: %s", arcode.name.c_str());
 	LogInfo("Number of codes: %i", arcode.ops.size());
 
-	std::vector<AREntry>::const_iterator
-		iter = arcode.ops.begin(),
-		ops_end = arcode.ops.end();
-	for (; iter != ops_end; ++iter)
+	for (const AREntry& entry : arcode.ops)
 	{
-		const ARAddr& addr = *(ARAddr*)&iter->cmd_addr;
-		const u32 data = iter->value;
+		const ARAddr& addr = *(ARAddr*)&entry.cmd_addr;
+		const u32 data = entry.value;
 
 		// after a conditional code, skip lines if needed
 		if (skip_count)
@@ -486,7 +486,7 @@ bool IsSelfLogging()
 
 // ----------------------
 // Code Functions
-bool Subtype_RamWriteAndFill(const ARAddr addr, const u32 data)
+bool Subtype_RamWriteAndFill(const ARAddr& addr, const u32 data)
 {
 	const u32 new_addr = addr.GCAddress();
 
@@ -543,7 +543,7 @@ bool Subtype_RamWriteAndFill(const ARAddr addr, const u32 data)
 	return true;
 }
 
-bool Subtype_WriteToPointer(const ARAddr addr, const u32 data)
+bool Subtype_WriteToPointer(const ARAddr& addr, const u32 data)
 {
 	const u32 new_addr = addr.GCAddress();
 	const u32 ptr = Memory::Read_U32(new_addr);
@@ -602,7 +602,7 @@ bool Subtype_WriteToPointer(const ARAddr addr, const u32 data)
 	return true;
 }
 
-bool Subtype_AddCode(const ARAddr addr, const u32 data)
+bool Subtype_AddCode(const ARAddr& addr, const u32 data)
 {
 	// Used to increment/decrement a value in memory
 	const u32 new_addr = addr.GCAddress();
@@ -662,7 +662,7 @@ bool Subtype_AddCode(const ARAddr addr, const u32 data)
 	return true;
 }
 
-bool Subtype_MasterCodeAndWriteToCCXXXXXX(const ARAddr addr, const u32 data)
+bool Subtype_MasterCodeAndWriteToCCXXXXXX(const ARAddr& addr, const u32 data)
 {
 	// code not yet implemented - TODO
 	// u32 new_addr = (addr & 0x01FFFFFF) | 0x80000000;
@@ -674,7 +674,7 @@ bool Subtype_MasterCodeAndWriteToCCXXXXXX(const ARAddr addr, const u32 data)
 	return false;
 }
 
-bool ZeroCode_FillAndSlide(const u32 val_last, const ARAddr addr, const u32 data) // This needs more testing
+bool ZeroCode_FillAndSlide(const u32 val_last, const ARAddr& addr, const u32 data) // This needs more testing
 {
 	const u32 new_addr = ((ARAddr*)&val_last)->GCAddress();
 	const u8 size = ((ARAddr*)&val_last)->size;
@@ -749,7 +749,7 @@ bool ZeroCode_FillAndSlide(const u32 val_last, const ARAddr addr, const u32 data
 }
 
 // Looks like this is new?? - untested
-bool ZeroCode_MemoryCopy(const u32 val_last, const ARAddr addr, const u32 data)
+bool ZeroCode_MemoryCopy(const u32 val_last, const ARAddr& addr, const u32 data)
 {
 	const u32 addr_dest = val_last | 0x06000000;
 	const u32 addr_src = addr.GCAddress();
@@ -795,7 +795,7 @@ bool ZeroCode_MemoryCopy(const u32 val_last, const ARAddr addr, const u32 data)
 	return true;
 }
 
-bool NormalCode(const ARAddr addr, const u32 data)
+bool NormalCode(const ARAddr& addr, const u32 data)
 {
 	switch (addr.subtype)
 	{
@@ -833,7 +833,7 @@ bool NormalCode(const ARAddr addr, const u32 data)
 	return true;
 }
 
-bool ConditionalCode(const ARAddr addr, const u32 data, int* const pSkipCount)
+bool ConditionalCode(const ARAddr& addr, const u32 data, int* const pSkipCount)
 {
 	const u32 new_addr = addr.GCAddress();
 
@@ -894,7 +894,7 @@ bool ConditionalCode(const ARAddr addr, const u32 data, int* const pSkipCount)
 
 bool CompareValues(const u32 val1, const u32 val2, const int type)
 {
-	switch(type)
+	switch (type)
 	{
 	case CONDTIONAL_EQUAL:
 		LogInfo("Type 1: If Equal");

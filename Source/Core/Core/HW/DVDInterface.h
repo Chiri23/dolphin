@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "CommonTypes.h"
+#include <string>
+#include "Common/CommonTypes.h"
+
 class PointerWrap;
 namespace MMIO { class Mapping; }
 
@@ -20,7 +22,7 @@ void RegisterMMIO(MMIO::Mapping* mmio, u32 base);
 // Disc detection and swapping
 void SetDiscInside(bool _DiscInside);
 bool IsDiscInside();
-void ChangeDisc(const char* _FileName);
+void ChangeDisc(const std::string& fileName);
 
 // Lid Functions
 void SetLidOpen(bool _bOpen = true);

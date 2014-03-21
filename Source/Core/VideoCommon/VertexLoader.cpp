@@ -2,37 +2,32 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "VideoCommon.h"
-#include "VideoConfig.h"
-#include "MemoryUtil.h"
-#include "StringUtil.h"
-#include "x64Emitter.h"
-#include "x64ABI.h"
-#include "PixelEngine.h"
-#include "Host.h"
+#include "Common/Common.h"
+#include "Common/MemoryUtil.h"
+#include "Common/StringUtil.h"
+#include "Common/x64ABI.h"
+#include "Common/x64Emitter.h"
 
-#include "LookUpTables.h"
-#include "Statistics.h"
-#include "VertexLoaderManager.h"
-#include "VertexLoader.h"
-#include "BPMemory.h"
-#include "DataReader.h"
-#include "VertexManagerBase.h"
-#include "IndexGenerator.h"
+#include "Core/Host.h"
 
-#include "VertexLoader_Position.h"
-#include "VertexLoader_Normal.h"
-#include "VertexLoader_Color.h"
-#include "VertexLoader_TextCoord.h"
+#include "VideoCommon/BPMemory.h"
+#include "VideoCommon/DataReader.h"
+#include "VideoCommon/IndexGenerator.h"
+#include "VideoCommon/LookUpTables.h"
+#include "VideoCommon/PixelEngine.h"
+#include "VideoCommon/Statistics.h"
+#include "VideoCommon/VertexLoader.h"
+#include "VideoCommon/VertexLoader_Color.h"
+#include "VideoCommon/VertexLoader_Normal.h"
+#include "VideoCommon/VertexLoader_Position.h"
+#include "VideoCommon/VertexLoader_TextCoord.h"
+#include "VideoCommon/VertexLoaderManager.h"
+#include "VideoCommon/VertexManagerBase.h"
+#include "VideoCommon/VideoCommon.h"
+#include "VideoCommon/VideoConfig.h"
 
 //BBox
-#include "XFMemory.h"
-#ifndef _M_GENERIC
-#ifndef __APPLE__
-#define USE_JIT
-#endif
-#endif
+#include "VideoCommon/XFMemory.h"
 
 #define COMPILED_CODE_SIZE 4096
 
@@ -296,15 +291,15 @@ void LOADERDECL UpdateBoundingBox()
 		return;
 
 	// Check points for bounds
-	u8 b0 = ((p0.x > 0) ? 1 : 0) | (((p0.y > 0) ? 1 : 0) << 1) | (((p0.x > 607) ? 1 : 0) << 2) | (((p0.y > 479) ? 1 : 0) << 3);
-	u8 b1 = ((p1.x > 0) ? 1 : 0) | (((p1.y > 0) ? 1 : 0) << 1) | (((p1.x > 607) ? 1 : 0) << 2) | (((p1.y > 479) ? 1 : 0) << 3);
+	u8 b0 = ((p0.x > 0) ? 1 : 0) | ((p0.y > 0) ? 2 : 0) | ((p0.x > 607) ? 4 : 0) | ((p0.y > 479) ? 8 : 0);
+	u8 b1 = ((p1.x > 0) ? 1 : 0) | ((p1.y > 0) ? 2 : 0) | ((p1.x > 607) ? 4 : 0) | ((p1.y > 479) ? 8 : 0);
 
 	// Let's be practical... If we only have a line, setting b2 to 3 saves an "if"-clause later on
 	u8 b2 = 3;
 
 	// Otherwise if we have a triangle, we need to check the third point
 	if (numPoints == 3)
-		b2 = ((p2.x > 0) ? 1 : 0) | (((p2.y > 0) ? 1 : 0) << 1) | (((p2.x > 607) ? 1 : 0) << 2) | (((p2.y > 479) ? 1 : 0) << 3);
+		b2 = ((p2.x > 0) ? 1 : 0) | ((p2.y > 0) ? 2 : 0) | ((p2.x > 607) ? 4 : 0) | ((p2.y > 479) ? 8 : 0);
 
 	// These are the internal bbox vars
 	s32 left = 608, right = -1, top = 480, bottom = -1;
@@ -469,11 +464,10 @@ void LOADERDECL TexMtx_Write_Float4()
 
 VertexLoader::VertexLoader(const TVtxDesc &vtx_desc, const VAT &vtx_attr)
 {
-	m_compiledCode = NULL;
+	m_compiledCode = nullptr;
 	m_numLoadedVertices = 0;
 	m_VertexSize = 0;
-	m_numPipelineStages = 0;
-	m_NativeFmt = 0;
+	m_NativeFmt = nullptr;
 	loop_counter = 0;
 	VertexLoader_Normal::Init();
 	VertexLoader_Position::Init();
@@ -482,11 +476,12 @@ VertexLoader::VertexLoader(const TVtxDesc &vtx_desc, const VAT &vtx_attr)
 	m_VtxDesc = vtx_desc;
 	SetVAT(vtx_attr.g0.Hex, vtx_attr.g1.Hex, vtx_attr.g2.Hex);
 
-	#ifdef USE_JIT
+	#ifdef USE_VERTEX_LOADER_JIT
 	AllocCodeSpace(COMPILED_CODE_SIZE);
 	CompileVertexTranslator();
 	WriteProtect();
 	#else
+	m_numPipelineStages = 0;
 	CompileVertexTranslator();
 	#endif
 
@@ -494,7 +489,7 @@ VertexLoader::VertexLoader(const TVtxDesc &vtx_desc, const VAT &vtx_attr)
 
 VertexLoader::~VertexLoader()
 {
-	#ifdef USE_JIT
+	#ifdef USE_VERTEX_LOADER_JIT
 	FreeCodeSpace();
 	#endif
 	delete m_NativeFmt;
@@ -505,7 +500,7 @@ void VertexLoader::CompileVertexTranslator()
 	m_VertexSize = 0;
 	const TVtxAttr &vtx_attr = m_VtxAttr;
 
-#ifdef USE_JIT
+#ifdef USE_VERTEX_LOADER_JIT
 	if (m_compiledCode)
 		PanicAlert("Trying to recompile a vertex translator");
 
@@ -531,6 +526,9 @@ void VertexLoader::CompileVertexTranslator()
 		WriteSetVariable(32, &s_texmtxwrite, Imm32(0));
 		WriteSetVariable(32, &s_texmtxread, Imm32(0));
 	}
+#else
+	// Reset pipeline
+	m_numPipelineStages = 0;
 #endif
 
 	// Colors
@@ -544,8 +542,6 @@ void VertexLoader::CompileVertexTranslator()
 		m_VtxDesc.Tex4Coord, m_VtxDesc.Tex5Coord, m_VtxDesc.Tex6Coord, (const u32)((m_VtxDesc.Hex >> 31) & 3)
 	};
 
-	// Reset pipeline
-	m_numPipelineStages = 0;
 	u32 components = 0;
 
 	// Position in pc vertex format.
@@ -571,7 +567,7 @@ void VertexLoader::CompileVertexTranslator()
 	if (m_VtxDesc.Tex7MatIdx) {m_VertexSize += 1; components |= VB_HAS_TEXMTXIDX7; WriteCall(TexMtx_ReadDirect_UByte); }
 
 	// Write vertex position loader
-	if(g_ActiveConfig.bUseBBox)
+	if (g_ActiveConfig.bUseBBox)
 	{
 		WriteCall(UpdateBoundingBoxPrepare);
 		WriteCall(VertexLoader_Position::GetFunction(m_VtxDesc.Position, m_VtxAttr.PosFormat, m_VtxAttr.PosElements));
@@ -598,7 +594,7 @@ void VertexLoader::CompileVertexTranslator()
 		TPipelineFunction pFunc = VertexLoader_Normal::GetFunction(m_VtxDesc.Normal,
 			m_VtxAttr.NormalFormat, m_VtxAttr.NormalElements, m_VtxAttr.NormalIndex3);
 
-		if (pFunc == 0)
+		if (pFunc == nullptr)
 		{
 			Host_SysMessage(
 				StringFromFormat("VertexLoader_Normal::GetFunction(%i %i %i %i) returned zero!", 
@@ -770,9 +766,9 @@ void VertexLoader::CompileVertexTranslator()
 	native_stride = nat_offset;
 	vtx_decl.stride = native_stride;
 
-#ifdef USE_JIT
+#ifdef USE_VERTEX_LOADER_JIT
 	// End loop here
-#ifdef _M_X64
+#if _M_X86_64
 	MOV(64, R(RAX), Imm64((u64)&loop_counter));
 	SUB(32, MatR(RAX), Imm8(1));
 #else
@@ -790,8 +786,8 @@ void VertexLoader::CompileVertexTranslator()
 
 void VertexLoader::WriteCall(TPipelineFunction func)
 {
-#ifdef USE_JIT
-#ifdef _M_X64
+#ifdef USE_VERTEX_LOADER_JIT
+#if _M_X86_64
 	MOV(64, R(RAX), Imm64((u64)func));
 	CALLptr(R(RAX));
 #else
@@ -805,8 +801,8 @@ void VertexLoader::WriteCall(TPipelineFunction func)
 #ifndef _M_GENERIC
 void VertexLoader::WriteGetVariable(int bits, OpArg dest, void *address)
 {
-#ifdef USE_JIT
-#ifdef _M_X64
+#ifdef USE_VERTEX_LOADER_JIT
+#if _M_X86_64
 	MOV(64, R(RAX), Imm64((u64)address));
 	MOV(bits, dest, MatR(RAX));
 #else
@@ -817,8 +813,8 @@ void VertexLoader::WriteGetVariable(int bits, OpArg dest, void *address)
 
 void VertexLoader::WriteSetVariable(int bits, void *address, OpArg value)
 {
-#ifdef USE_JIT
-#ifdef _M_X64
+#ifdef USE_VERTEX_LOADER_JIT
+#if _M_X86_64
 	MOV(64, R(RAX), Imm64((u64)address));
 	MOV(bits, MatR(RAX), value);
 #else
@@ -833,7 +829,7 @@ void VertexLoader::SetupRunVertices(int vtx_attr_group, int primitive, int const
 	m_numLoadedVertices += count;
 
 	// Flush if our vertex format is different from the currently set.
-	if (g_nativeVertexFmt != NULL && g_nativeVertexFmt != m_NativeFmt)
+	if (g_nativeVertexFmt != nullptr && g_nativeVertexFmt != m_NativeFmt)
 	{
 		// We really must flush here. It's possible that the native representations
 		// of the two vtx formats are the same, but we have no way to easily check that
@@ -870,7 +866,7 @@ void VertexLoader::SetupRunVertices(int vtx_attr_group, int primitive, int const
 
 void VertexLoader::ConvertVertices ( int count )
 {
-#ifdef USE_JIT
+#ifdef USE_VERTEX_LOADER_JIT
 	if (count > 0)
 	{
 		loop_counter = count;
@@ -951,7 +947,7 @@ void VertexLoader::SetVAT(u32 _group0, u32 _group1, u32 _group2)
 	m_VtxAttr.texCoord[7].Format   = vat.g2.Tex7CoordFormat;
 	m_VtxAttr.texCoord[7].Frac     = vat.g2.Tex7Frac;
 
-	if(!m_VtxAttr.ByteDequant) {
+	if (!m_VtxAttr.ByteDequant) {
 		ERROR_LOG(VIDEO, "ByteDequant is set to zero");
 	}
 };

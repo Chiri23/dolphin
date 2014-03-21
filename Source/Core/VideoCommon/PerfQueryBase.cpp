@@ -1,7 +1,7 @@
-#include "PerfQueryBase.h"
-#include "VideoConfig.h"
+#include "VideoCommon/PerfQueryBase.h"
+#include "VideoCommon/VideoConfig.h"
 
-PerfQueryBase* g_perf_query = 0;
+PerfQueryBase* g_perf_query = nullptr;
 
 bool PerfQueryBase::ShouldEmulate()
 {

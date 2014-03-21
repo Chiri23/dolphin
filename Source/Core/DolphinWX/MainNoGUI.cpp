@@ -2,40 +2,43 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
 #include <getopt.h>
+#include <string>
 
-#include "Common.h"
-#include "FileUtil.h"
+#include "Common/Common.h"
+#include "Common/LogManager.h"
+#include "Common/Thread.h"
+
+#include "Core/BootManager.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/CoreParameter.h"
+#include "Core/HW/Wiimote.h"
+#include "Core/PowerPC/PowerPC.h"
+
+#include "VideoCommon/VideoBackendBase.h"
 
 #if HAVE_X11
 #include <X11/keysym.h>
-#include "State.h"
-#include "X11Utils.h"
+#include "Core/State.h"
+#include "DolphinWX/X11Utils.h"
 #endif
 
 #if HAVE_WAYLAND
 #include <wayland-client.h>
-#include "GLInterface/GLInterface.h"
+#endif
+
+#ifdef USE_EGL
+#include "DolphinWX/GLInterface/GLInterface.h"
 #endif
 
 #ifdef __APPLE__
 #import <Cocoa/Cocoa.h>
 #endif
-
-#include "Core.h"
-#include "Host.h"
-#include "CPUDetect.h"
-#include "Thread.h"
-#include "PowerPC/PowerPC.h"
-#include "HW/Wiimote.h"
-
-#include "VideoBackendBase.h"
-#include "ConfigManager.h"
-#include "LogManager.h"
-#include "BootManager.h"
 
 bool rendererHasFocus = true;
 bool running = true;
@@ -58,12 +61,12 @@ void Host_Message(int Id)
 
 void* Host_GetRenderHandle()
 {
-	return NULL;
+	return nullptr;
 }
 
-void* Host_GetInstance() { return NULL; }
+void* Host_GetInstance() { return nullptr; }
 
-void Host_UpdateTitle(const char* title){};
+void Host_UpdateTitle(const std::string& title){};
 
 void Host_UpdateLogDisplay(){}
 
@@ -106,7 +109,7 @@ void Host_ConnectWiimote(int wm_idx, bool connect) {}
 
 void Host_SetWaitCursor(bool enable){}
 
-void Host_UpdateStatusBar(const char* _pText, int Filed){}
+void Host_UpdateStatusBar(const std::string& text, int filed){}
 
 void Host_SysMessage(const char *fmt, ...)
 {
@@ -176,7 +179,7 @@ void X11_MainLoop()
 		for (int num_events = XPending(dpy); num_events > 0; num_events--)
 		{
 			XNextEvent(dpy, &event);
-			switch(event.type)
+			switch (event.type)
 			{
 				case KeyPress:
 					key = XLookupKeysym((XKeyEvent*)&event, 0);
@@ -267,7 +270,7 @@ void X11_MainLoop()
 void Wayland_MainLoop()
 {
 	// Wait for display to be initialized
-	while(!GLWin.wl_display)
+	while (!GLWin.wl_display)
 		usleep(20000);
 
 	GLWin.running = 1;
@@ -291,10 +294,10 @@ int main(int argc, char* argv[])
 #endif
 	int ch, help = 0;
 	struct option longopts[] = {
-		{ "exec",    no_argument, NULL, 'e' },
-		{ "help",    no_argument, NULL, 'h' },
-		{ "version", no_argument, NULL, 'v' },
-		{ NULL,      0,           NULL,  0  }
+		{ "exec",    no_argument, nullptr, 'e' },
+		{ "help",    no_argument, nullptr, 'h' },
+		{ "version", no_argument, nullptr, 'v' },
+		{ nullptr,      0,           nullptr,  0  }
 	};
 
 	while ((ch = getopt_long(argc, argv, "eh?v", longopts, 0)) != -1)
@@ -335,7 +338,7 @@ int main(int argc, char* argv[])
 	GLWin.platform = EGL_PLATFORM_NONE;
 #endif
 #if HAVE_WAYLAND
-	GLWin.wl_display = NULL;
+	GLWin.wl_display = nullptr;
 #endif
 
 	// No use running the loop when booting fails

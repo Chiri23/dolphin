@@ -4,15 +4,16 @@
 
 #pragma once
 
-#include "InterfaceBase.h"
+#include <string>
+#include "DolphinWX/GLInterface/InterfaceBase.h"
 
 class cInterfaceWGL : public cInterfaceBase
 {
 public:
 	void SwapInterval(int Interval);
 	void Swap();
-	void UpdateFPSDisplay(const char *Text);
-	void* GetFuncAddress(std::string name);
+	void UpdateFPSDisplay(const std::string& text);
+	void* GetFuncAddress(const std::string& name);
 	bool Create(void *&window_handle);
 	bool MakeCurrent();
 	bool ClearCurrent();

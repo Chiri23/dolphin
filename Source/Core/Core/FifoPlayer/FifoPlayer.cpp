@@ -2,21 +2,20 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "FifoDataFile.h"
-#include "FifoPlayer.h"
+#include "Common/Common.h"
 
-#include "Common.h"
-#include "ConfigManager.h"
-#include "Core.h"
-#include "CoreTiming.h"
-#include "Host.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/Host.h"
+#include "Core/FifoPlayer/FifoDataFile.h"
+#include "Core/FifoPlayer/FifoPlayer.h"
+#include "Core/HW/GPFifo.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/SystemTimers.h"
+#include "Core/PowerPC/PowerPC.h"
 
-#include "HW/GPFifo.h"
-#include "HW/Memmap.h"
-#include "HW/SystemTimers.h"
-#include "PowerPC/PowerPC.h"
-
-#include "BPMemory.h"
+#include "VideoCommon/BPMemory.h"
 
 FifoPlayer::~FifoPlayer()
 {
@@ -40,13 +39,13 @@ bool FifoPlayer::Open(const std::string& filename)
 	if (m_FileLoadedCb)
 		m_FileLoadedCb();
 
-	return (m_File != NULL);
+	return (m_File != nullptr);
 }
 
 void FifoPlayer::Close()
 {
 	delete m_File;
-	m_File = NULL;
+	m_File = nullptr;
 
 	m_FrameRangeStart = 0;
 	m_FrameRangeEnd = 0;
@@ -159,9 +158,9 @@ FifoPlayer::FifoPlayer() :
 	m_ObjectRangeStart(0),
 	m_ObjectRangeEnd(10000),
 	m_EarlyMemoryUpdates(false),
-	m_FileLoadedCb(NULL),
-	m_FrameWrittenCb(NULL),
-	m_File(NULL)
+	m_FileLoadedCb(nullptr),
+	m_FrameWrittenCb(nullptr),
+	m_File(nullptr)
 {
 	m_Loop = SConfig::GetInstance().m_LocalCoreStartupParameter.bLoopFifoReplay;
 }
@@ -272,7 +271,7 @@ void FifoPlayer::WriteAllMemoryUpdates()
 
 void FifoPlayer::WriteMemory(const MemoryUpdate& memUpdate)
 {
-	u8 *mem = NULL;
+	u8 *mem = nullptr;
 
 	if (memUpdate.address & 0x10000000)
 		mem = &Memory::m_pEXRAM[memUpdate.address & Memory::EXRAM_MASK];

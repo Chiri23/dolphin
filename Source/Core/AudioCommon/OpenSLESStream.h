@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "Thread.h"
-#include "SoundStream.h"
+#include "AudioCommon/SoundStream.h"
+#include "Common/Thread.h"
 
-class OpenSLESStream : public SoundStream
+class OpenSLESStream final : public SoundStream
 {
 #ifdef ANDROID
 public:
-	OpenSLESStream(CMixer *mixer, void *hWnd = NULL)
+	OpenSLESStream(CMixer *mixer, void *hWnd = nullptr)
 		: SoundStream(mixer)
 	{};
 
@@ -20,13 +20,12 @@ public:
 	virtual bool Start();
 	virtual void Stop();
 	static bool isValid() { return true; }
-	virtual bool usesMixer() const { return true; }
 
 private:
 	std::thread thread;
 	Common::Event soundSyncEvent;
 #else
 public:
-	OpenSLESStream(CMixer *mixer, void *hWnd = NULL): SoundStream(mixer) {}
+	OpenSLESStream(CMixer *mixer, void *hWnd = nullptr): SoundStream(mixer) {}
 #endif // HAVE_OPENSL
 };

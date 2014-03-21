@@ -2,22 +2,21 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
+#include "Common/Common.h"
 
-#include "SWVertexLoader.h"
-#include "VertexLoader_Position.h"
-#include "VertexLoader_Normal.h"
-#include "VertexLoader_Color.h"
-#include "VertexLoader_TextCoord.h"
+#include "VideoBackends/Software/CPMemLoader.h"
+#include "VideoBackends/Software/SetupUnit.h"
+#include "VideoBackends/Software/SWStatistics.h"
+#include "VideoBackends/Software/SWVertexLoader.h"
+#include "VideoBackends/Software/TransformUnit.h"
+#include "VideoBackends/Software/XFMemLoader.h"
 
-#include "CPMemLoader.h"
-#include "XFMemLoader.h"
-
-#include "TransformUnit.h"
-#include "SetupUnit.h"
-#include "SWStatistics.h"
-#include "VertexManagerBase.h"
-#include "DataReader.h"
+#include "VideoCommon/DataReader.h"
+#include "VideoCommon/VertexLoader_Color.h"
+#include "VideoCommon/VertexLoader_Normal.h"
+#include "VideoCommon/VertexLoader_Position.h"
+#include "VideoCommon/VertexLoader_TextCoord.h"
+#include "VideoCommon/VertexManagerBase.h"
 
 // Vertex loaders read these
 extern int tcIndex;
@@ -41,7 +40,7 @@ SWVertexLoader::SWVertexLoader() :
 SWVertexLoader::~SWVertexLoader()
 {
 	delete m_SetupUnit;
-	m_SetupUnit = NULL;
+	m_SetupUnit = nullptr;
 }
 
 void SWVertexLoader::SetFormat(u8 attributeIndex, u8 primitiveType)
@@ -90,8 +89,8 @@ void SWVertexLoader::SetFormat(u8 attributeIndex, u8 primitiveType)
 	m_VertexSize = 0;
 
 	// Reset pipeline
-	m_positionLoader = NULL;
-	m_normalLoader = NULL;
+	m_positionLoader = nullptr;
+	m_normalLoader = nullptr;
 	m_NumAttributeLoaders = 0;
 
 	// Reset vertex
@@ -165,7 +164,7 @@ void SWVertexLoader::SetFormat(u8 attributeIndex, u8 primitiveType)
 		m_normalLoader = VertexLoader_Normal::GetFunction(g_VtxDesc.Normal,
 			m_CurrentVat->g0.NormalFormat, m_CurrentVat->g0.NormalElements, m_CurrentVat->g0.NormalIndex3);
 
-		if (m_normalLoader == 0)
+		if (m_normalLoader == nullptr)
 		{
 			ERROR_LOG(VIDEO, "VertexLoader_Normal::GetFunction returned zero!");
 		}
@@ -177,7 +176,7 @@ void SWVertexLoader::SetFormat(u8 attributeIndex, u8 primitiveType)
 		switch (colDesc[i])
 		{
 		case NOT_PRESENT:
-			m_colorLoader[i] = NULL;
+			m_colorLoader[i] = nullptr;
 			break;
 		case DIRECT:
 			switch (colComp[i])

@@ -2,21 +2,21 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "ChunkFile.h"
+#include "Common/ChunkFile.h"
+#include "Common/Common.h"
+#include "Common/StringUtil.h"
 
-#include "../PowerPC/PowerPC.h"
-#include "../Core.h"
-#include "ProcessorInterface.h"
-#include "VideoInterface.h"
-#include "Memmap.h"
-#include "../CoreTiming.h"
-#include "SystemTimers.h"
-#include "StringUtil.h"
-#include "MMIO.h"
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/State.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/MMIO.h"
+#include "Core/HW/ProcessorInterface.h"
+#include "Core/HW/SystemTimers.h"
+#include "Core/HW/VideoInterface.h"
+#include "Core/PowerPC/PowerPC.h"
 
-#include "VideoBackendBase.h"
-#include "State.h"
+#include "VideoCommon/VideoBackendBase.h"
 
 namespace VideoInterface
 {
@@ -173,11 +173,15 @@ void Init()
 
 	m_DTVStatus.ntsc_j = Core::g_CoreStartupParameter.bForceNTSCJ;
 
-	for (int i = 0; i < 4; i++)
-		m_InterruptRegister[i].Hex = 0;
+	for (UVIInterruptRegister& reg : m_InterruptRegister)
+	{
+		reg.Hex = 0;
+	}
 
-	for (int i = 0; i < 2; i++)
-		m_LatchRegister[i].Hex = 0;
+	for (UVILatchRegister& reg : m_LatchRegister)
+	{
+		reg.Hex = 0;
+	}
 
 	m_DisplayControlRegister.Hex = 0;
 	UpdateParameters();
@@ -359,8 +363,10 @@ void RegisterMMIO(MMIO::Mapping* mmio, u32 base)
 			{
 				// shuffle2 clear all data, reset to default vals, and enter idle mode
 				m_DisplayControlRegister.RST = 0;
-				for (int i = 0; i < 4; i++)
-					m_InterruptRegister[i].Hex = 0;
+				for (UVIInterruptRegister& reg : m_InterruptRegister)
+				{
+					reg.Hex = 0;
+				}
 				UpdateInterrupts();
 			}
 
@@ -509,7 +515,7 @@ static void BeginField(FieldType field)
 		// But the PAL ports of some games are poorly programmed and don't use correct ordering.
 		// Zelda: Wind Waker and Simpsons Hit & Run are exampes of this, there are probally more.
 		// PAL Wind Waker also runs at 30fps instead of 25.
-		if(field == FieldType::FIELD_PROGRESSIVE || GetXFBAddressBottom() != (GetXFBAddressTop() - 1280))
+		if (field == FieldType::FIELD_PROGRESSIVE || GetXFBAddressBottom() != (GetXFBAddressTop() - 1280))
 		{
 			WARN_LOG(VIDEOINTERFACE, "PAL game is trying to use incorrect (NTSC) field ordering");
 			// Lets kindly fix this for them.
@@ -517,7 +523,9 @@ static void BeginField(FieldType field)
 
 			// TODO: PAL Simpsons Hit & Run now has a green line at the bottom when Real XFB is used.
 			// Might be a bug later on in our code, or a bug in the actual game.
-		} else {
+		}
+		else
+		{
 			xfbAddr = GetXFBAddressBottom();
 		}
 	} else {
@@ -576,10 +584,12 @@ void Update()
 	if (++m_VBeamPos > s_lineCount * fields)
 		m_VBeamPos = 1;
 
-	for (int i = 0; i < 4; i++)
+	for (UVIInterruptRegister& reg : m_InterruptRegister)
 	{
-		if (m_VBeamPos == m_InterruptRegister[i].VCT)
-			m_InterruptRegister[i].IR_INT = 1;
+		if (m_VBeamPos == reg.VCT)
+		{
+			reg.IR_INT = 1;
+		}
 	}
 	UpdateInterrupts();
 }

@@ -2,7 +2,7 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
+#include "Common/Common.h"
 //#include "scmrev.h"
 #define SCM_BRANCH_STR ""
 #define SCM_DESC_STR "NV"
@@ -27,14 +27,16 @@ const char *scm_rev_str = "Dolphin "
 	BUILD_TYPE_STR SCM_DESC_STR;
 #endif
 
-#ifdef _M_X64
+#if _M_X86_64
 #define NP_ARCH "x64"
-#else
-#ifdef _M_ARM
-#define NP_ARCH "ARM"
-#else
+#elif _M_ARM_32
+#define NP_ARCH "ARM32"
+#elif _M_ARM_64
+#define NP_ARCH "ARM64"
+#elif _M_X86_32
 #define NP_ARCH "x86"
-#endif
+#else
+#define NP_ARCH "Unk"
 #endif
 
 #ifdef _WIN32

@@ -2,17 +2,18 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
+#include <cinttypes>
+#include <ctime> // For profiling
 #include <map>
 #include <memory>
-#include <cinttypes>
 
-#include "Common.h"
-#include "../../HLE/HLE.h"
-#include "../../PatchEngine.h"
-#include "../Profiler.h"
-#include "JitIL.h"
-#include "JitILAsm.h"
-#include "JitIL_Tables.h"
+#include "Common/Common.h"
+#include "Core/PatchEngine.h"
+#include "Core/HLE/HLE.h"
+#include "Core/PowerPC/Profiler.h"
+#include "Core/PowerPC/Jit64IL/JitIL.h"
+#include "Core/PowerPC/Jit64IL/JitIL_Tables.h"
+#include "Core/PowerPC/Jit64IL/JitILAsm.h"
 
 using namespace Gen;
 using namespace PowerPC;
@@ -130,10 +131,6 @@ ps_adds1
 
 */
 
-
-// For profiling
-#include <time.h>
-
 #ifdef _WIN32
 #include <windows.h>
 #include <intrin.h>
@@ -209,9 +206,9 @@ namespace JitILProfiler
 		virtual ~JitILProfilerFinalizer()
 		{
 			char buffer[1024];
-			sprintf(buffer, "JitIL_profiling_%d.csv", (int)time(NULL));
+			sprintf(buffer, "JitIL_profiling_%d.csv", (int)time(nullptr));
 			File::IOFile file(buffer, "w");
-			setvbuf(file.GetHandle(), NULL, _IOFBF, 1024 * 1024);
+			setvbuf(file.GetHandle(), nullptr, _IOFBF, 1024 * 1024);
 			fprintf(file.GetHandle(), "code hash,total elapsed,number of calls,elapsed per call\n");
 			for (auto& block : blocks)
 			{
@@ -319,9 +316,9 @@ void JitIL::unknown_instruction(UGeckoInstruction inst)
 	PanicAlert("unknown_instruction %08x - Fix me ;)", inst.hex);
 }
 
-void JitIL::Default(UGeckoInstruction _inst)
+void JitIL::FallBackToInterpreter(UGeckoInstruction _inst)
 {
-	ibuild.EmitInterpreterFallback(
+	ibuild.EmitFallBackToInterpreter(
 		ibuild.EmitIntConst(_inst.hex),
 		ibuild.EmitIntConst(js.compilerPC));
 }
@@ -349,7 +346,7 @@ static void ImHere()
 	{
 		if (!f)
 		{
-#ifdef _M_X64
+#if _M_X86_64
 			f.Open("log64.txt", "w");
 #else
 			f.Open("log32.txt", "w");
@@ -466,7 +463,7 @@ void JitIL::Trace()
 	{
 		char reg[50];
 		sprintf(reg, "r%02d: %08x ", i, PowerPC::ppcState.gpr[i]);
-		strncat(regs, reg, 500);
+		strncat(regs, reg, sizeof(regs) - 1);
 	}
 #endif
 
@@ -475,7 +472,7 @@ void JitIL::Trace()
 	{
 		char reg[50];
 		sprintf(reg, "f%02d: %016x ", i, riPS0(i));
-		strncat(fregs, reg, 750);
+		strncat(fregs, reg, sizeof(fregs) - 1);
 	}
 #endif
 

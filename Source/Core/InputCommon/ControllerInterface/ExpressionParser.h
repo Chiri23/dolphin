@@ -5,7 +5,7 @@
 #pragma once
 
 #include <string>
-#include "Device.h"
+#include "InputCommon/ControllerInterface/Device.h"
 
 namespace ciface
 {
@@ -47,7 +47,7 @@ class ExpressionNode;
 class Expression
 {
 public:
-	Expression() : node(NULL) {}
+	Expression() : node(nullptr) {}
 	Expression(ExpressionNode *node);
 	~Expression();
 	ControlState GetValue();

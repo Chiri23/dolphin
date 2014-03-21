@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "CommonTypes.h"
-#include "ChunkFile.h"
+#include "Common/ChunkFile.h"
+#include "Common/CommonTypes.h"
 
 enum TEXIDevices
 {
@@ -40,7 +40,7 @@ public:
 	virtual void SetCS(int) {}
 	virtual void DoState(PointerWrap&) {}
 	virtual void PauseAndLock(bool doLock, bool unpauseOnUnlock=true) {}
-	virtual IEXIDevice* FindDevice(TEXIDevices device_type, int customIndex=-1) { return (device_type == m_deviceType) ? this : NULL; }
+	virtual IEXIDevice* FindDevice(TEXIDevices device_type, int customIndex=-1) { return (device_type == m_deviceType) ? this : nullptr; }
 
 	// Update
 	virtual void Update() {}

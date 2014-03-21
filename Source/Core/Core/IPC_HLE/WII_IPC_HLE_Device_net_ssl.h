@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "WII_IPC_HLE_Device.h"
-
+#include <polarssl/ctr_drbg.h>
+#include <polarssl/entropy.h>
 #include <polarssl/net.h>
 #include <polarssl/ssl.h>
-#include <polarssl/havege.h>
+
+#include "Core/IPC_HLE/WII_IPC_HLE_Device.h"
 
 #define NET_SSL_MAX_HOSTNAME_LEN 256
 #define NET_SSL_MAXINSTANCES 4
@@ -57,10 +58,11 @@ typedef struct
 {
 	ssl_context ctx;
 	ssl_session session;
-	havege_state hs;
-	x509_cert cacert;
-	x509_cert clicert;
-	rsa_context rsa;
+	entropy_context entropy;
+	ctr_drbg_context ctr_drbg;
+	x509_crt cacert;
+	x509_crt clicert;
+	pk_context pk;
 	int sockfd;
 	char hostname[NET_SSL_MAX_HOSTNAME_LEN];
 	bool active;
@@ -74,12 +76,12 @@ public:
 
 	virtual ~CWII_IPC_HLE_Device_net_ssl();
 
-	virtual bool Open(u32 _CommandAddress, u32 _Mode);
+	virtual bool Open(u32 _CommandAddress, u32 _Mode) override;
 
-	virtual bool Close(u32 _CommandAddress, bool _bForce);
+	virtual bool Close(u32 _CommandAddress, bool _bForce) override;
 
-	virtual bool IOCtl(u32 _CommandAddress);
-	virtual bool IOCtlV(u32 _CommandAddress);
+	virtual bool IOCtl(u32 _CommandAddress) override;
+	virtual bool IOCtlV(u32 _CommandAddress) override;
 	int getSSLFreeID();
 
 	static WII_SSL _SSL[NET_SSL_MAXINSTANCES];

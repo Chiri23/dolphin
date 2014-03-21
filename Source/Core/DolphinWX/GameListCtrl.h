@@ -4,14 +4,21 @@
 
 #pragma once
 
-#include <memory>
+#include <cstddef>
+#include <string>
 #include <vector>
 
+#include <wx/event.h>
+#include <wx/gdicmn.h>
 #include <wx/listctrl.h>
+#include <wx/string.h>
 #include <wx/tipwin.h>
+#include <wx/windowid.h>
 
-#include "ISOFile.h"
-#include "MemoryCards/WiiSaveCrypted.h"
+#include "DolphinWX/ISOFile.h"
+
+class wxListEvent;
+class wxWindow;
 
 class wxEmuStateTip : public wxTipWindow
 {
@@ -31,7 +38,7 @@ public:
 	CGameListCtrl(wxWindow* parent, const wxWindowID id, const wxPoint& pos, const wxSize& size, long style);
 	~CGameListCtrl();
 
-	void Update();
+	void Update() override;
 
 	void BrowseForDirectory();
 	const GameListItem *GetSelectedISO();

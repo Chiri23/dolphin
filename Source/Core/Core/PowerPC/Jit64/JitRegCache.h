@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "x64Emitter.h"
+#include "Common/x64Emitter.h"
 
 using namespace Gen;
 enum FlushMode
@@ -35,9 +35,9 @@ struct X64CachedReg
 typedef int XReg;
 typedef int PReg;
 
-#ifdef _M_X64
+#if _M_X86_64
 #define NUMXREGS 16
-#elif _M_IX86
+#elif _M_X86_32
 #define NUMXREGS 8
 #endif
 

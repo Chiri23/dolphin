@@ -2,24 +2,24 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "VideoCommon.h"
-#include "VideoConfig.h"
-#include "MathUtil.h"
-#include "Thread.h"
-#include "Atomic.h"
-#include "Fifo.h"
-#include "ChunkFile.h"
-#include "CommandProcessor.h"
-#include "PixelEngine.h"
-#include "CoreTiming.h"
-#include "ConfigManager.h"
-#include "HW/ProcessorInterface.h"
-#include "HW/GPFifo.h"
-#include "HW/Memmap.h"
-#include "HW/SystemTimers.h"
-#include "Core.h"
-#include "HW/MMIO.h"
+#include "Common/Atomic.h"
+#include "Common/ChunkFile.h"
+#include "Common/Common.h"
+#include "Common/MathUtil.h"
+#include "Common/Thread.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/HW/GPFifo.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/MMIO.h"
+#include "Core/HW/ProcessorInterface.h"
+#include "Core/HW/SystemTimers.h"
+#include "VideoCommon/CommandProcessor.h"
+#include "VideoCommon/Fifo.h"
+#include "VideoCommon/PixelEngine.h"
+#include "VideoCommon/VideoCommon.h"
+#include "VideoCommon/VideoConfig.h"
 
 namespace CommandProcessor
 {
@@ -310,8 +310,9 @@ void STACKALIGN GatherPipeBursted()
 		{
 			// In multibuffer mode is not allowed write in the same FIFO attached to the GPU.
 			// Fix Pokemon XD in DC mode.
-			if((ProcessorInterface::Fifo_CPUEnd == fifo.CPEnd) && (ProcessorInterface::Fifo_CPUBase == fifo.CPBase)
-				 && fifo.CPReadWriteDistance > 0)
+			if ((ProcessorInterface::Fifo_CPUEnd == fifo.CPEnd) &&
+			    (ProcessorInterface::Fifo_CPUBase == fifo.CPBase) &&
+			    fifo.CPReadWriteDistance > 0)
 			{
 				ProcessFifoAllDistance();
 			}
@@ -509,17 +510,17 @@ void SetCpControlRegister()
 	fifo.bFF_LoWatermarkInt = m_CPCtrlReg.FifoUnderflowIntEnable;
 	fifo.bFF_GPLinkEnable = m_CPCtrlReg.GPLinkEnable;
 
-	if(m_CPCtrlReg.GPReadEnable && m_CPCtrlReg.GPLinkEnable)
+	if (m_CPCtrlReg.GPReadEnable && m_CPCtrlReg.GPLinkEnable)
 	{
 		ProcessorInterface::Fifo_CPUWritePointer = fifo.CPWritePointer;
 		ProcessorInterface::Fifo_CPUBase = fifo.CPBase;
 		ProcessorInterface::Fifo_CPUEnd = fifo.CPEnd;
 	}
 
-	if(fifo.bFF_GPReadEnable && !m_CPCtrlReg.GPReadEnable)
+	if (fifo.bFF_GPReadEnable && !m_CPCtrlReg.GPReadEnable)
 	{
 		fifo.bFF_GPReadEnable = m_CPCtrlReg.GPReadEnable;
-		while(fifo.isGpuReadingData) Common::YieldCPU();
+		while (fifo.isGpuReadingData) Common::YieldCPU();
 	}
 	else
 	{

@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "Common.h"
 #include <array>
 #include <string>
 #include <type_traits>
 
-#include "MMIOHandlers.h"
+#include "Common/Common.h"
+#include "Core/HW/MMIOHandlers.h"
 
 namespace MMIO
 {
@@ -31,8 +31,21 @@ enum Block
 const u32 BLOCK_SIZE = 0x10000;
 const u32 NUM_MMIOS = NUM_BLOCKS * BLOCK_SIZE;
 
+// Checks if a given physical memory address refers to the MMIO address range.
+// In practice, most games use a virtual memory mapping (via BATs set in the
+// IPL) that matches the physical memory mapping for MMIOs.
+//
+// We have a special exception here for FIFO writes: these are handled via a
+// different mechanism and should not go through the normal MMIO access
+// interface.
+inline bool IsMMIOAddress(u32 address)
+{
+	return ((address & 0xE0000000) == 0xC0000000) &&
+	       ((address & 0x0000FFFF) != 0x00008000);
+}
+
 // Compute the internal unique ID for a given MMIO address. This ID is computed
-// from a very simple formula: (1 + block_id) * lower_16_bits(address).
+// from a very simple formula: (block_id << 16) | lower_16_bits(address).
 //
 // The block ID can easily be computed by simply checking bit 24 (CC vs. CD).
 inline u32 UniqueID(u32 address)
@@ -42,7 +55,7 @@ inline u32 UniqueID(u32 address)
 	                         ((address & 0xFFFF0000) == 0xCD800000),
 	                 "Trying to get the ID of a non-existing MMIO address.");
 
-	return (1 + ((address >> 24) & 1)) * (address & 0xFFFF);
+	return (((address >> 24) & 1) << 16) | (address & 0xFFFF);
 }
 
 // Some utilities functions to define MMIO mappings.

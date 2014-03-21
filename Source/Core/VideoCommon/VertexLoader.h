@@ -10,13 +10,18 @@
 #include <algorithm>
 #include <string>
 
-#include "Common.h"
+#include "Common/Common.h"
+#include "Common/x64Emitter.h"
 
-#include "CPMemory.h"
-#include "DataReader.h"
-#include "NativeVertexFormat.h"
+#include "VideoCommon/CPMemory.h"
+#include "VideoCommon/DataReader.h"
+#include "VideoCommon/NativeVertexFormat.h"
 
-#include "x64Emitter.h"
+#ifndef _M_GENERIC
+#ifndef __APPLE__
+#define USE_VERTEX_LOADER_JIT
+#endif
+#endif
 
 class VertexLoaderUID
 {
@@ -119,9 +124,11 @@ private:
 	NativeVertexFormat *m_NativeFmt;
 	int native_stride;
 
-	// Pipeline. To be JIT compiled in the future.
+#ifndef USE_VERTEX_LOADER_JIT
+	// Pipeline.
 	TPipelineFunction m_PipelineStages[64];  // TODO - figure out real max. it's lower.
 	int m_numPipelineStages;
+#endif
 
 	const u8 *m_compiledCode;
 

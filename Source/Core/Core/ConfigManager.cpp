@@ -2,13 +2,13 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "CommonPaths.h"
-#include "ConfigManager.h"
-#include "IniFile.h"
-#include "FileUtil.h"
-#include "NANDContentLoader.h"
-#include "HW/SI.h"
+#include "Common/Common.h"
+#include "Common/CommonPaths.h"
+#include "Common/FileUtil.h"
+#include "Common/IniFile.h"
+#include "Core/ConfigManager.h"
+#include "Core/HW/SI.h"
+#include "DiscIO/NANDContentLoader.h"
 
 SConfig* SConfig::m_Instance;
 
@@ -125,7 +125,7 @@ void SConfig::Init()
 void SConfig::Shutdown()
 {
 	delete m_Instance;
-	m_Instance = NULL;
+	m_Instance = nullptr;
 }
 
 SConfig::~SConfig()
@@ -260,6 +260,7 @@ void SConfig::SaveSettings()
 	ini.Set("Core", "RunCompareServer", m_LocalCoreStartupParameter.bRunCompareServer);
 	ini.Set("Core", "RunCompareClient", m_LocalCoreStartupParameter.bRunCompareClient);
 	ini.Set("Core", "FrameLimit",       m_Framelimit);
+	ini.Set("Core", "FrameSkip",        m_FrameSkip);
 
 	// GFX Backend
 	ini.Set("Core", "GFXBackend", m_LocalCoreStartupParameter.m_strVideoBackend);
@@ -269,7 +270,7 @@ void SConfig::SaveSettings()
 	ini.Set("Movie", "Author", m_strMovieAuthor);
 
 	// DSP
-	ini.Set("DSP", "EnableJIT", m_EnableJIT);
+	ini.Set("DSP", "EnableJIT", m_DSPEnableJIT);
 	ini.Set("DSP", "DumpAudio", m_DumpAudio);
 	ini.Set("DSP", "Backend", sBackend);
 	ini.Set("DSP", "Volume", m_Volume);
@@ -384,10 +385,12 @@ void SConfig::LoadSettings()
 
 		// Core
 		ini.Get("Core", "HLE_BS2",      &m_LocalCoreStartupParameter.bHLE_BS2, false);
-#ifdef _M_ARM
+#ifdef _M_X86
+		ini.Get("Core", "CPUCore",      &m_LocalCoreStartupParameter.iCPUCore, 1);
+#elif _M_ARM_32
 		ini.Get("Core", "CPUCore",      &m_LocalCoreStartupParameter.iCPUCore, 3);
 #else
-		ini.Get("Core", "CPUCore",      &m_LocalCoreStartupParameter.iCPUCore, 1);
+		ini.Get("Core", "CPUCore",      &m_LocalCoreStartupParameter.iCPUCore, 0);
 #endif
 		ini.Get("Core", "Fastmem",           &m_LocalCoreStartupParameter.bFastmem,      true);
 		ini.Get("Core", "DSPThread",         &m_LocalCoreStartupParameter.bDSPThread,    false);
@@ -427,6 +430,7 @@ void SConfig::LoadSettings()
 		ini.Get("Core", "FastDiscSpeed",             &m_LocalCoreStartupParameter.bFastDiscSpeed,    false);
 		ini.Get("Core", "DCBZ",                      &m_LocalCoreStartupParameter.bDCBZOFF,          false);
 		ini.Get("Core", "FrameLimit",                &m_Framelimit,                                  1); // auto frame limit by default
+		ini.Get("Core", "FrameSkip",                 &m_FrameSkip,                                   0);
 
 		// GFX Backend
 		ini.Get("Core", "GFXBackend",  &m_LocalCoreStartupParameter.m_strVideoBackend, "");
@@ -436,7 +440,7 @@ void SConfig::LoadSettings()
 		ini.Get("Movie", "Author", &m_strMovieAuthor, "");
 
 		// DSP
-		ini.Get("DSP", "EnableJIT", &m_EnableJIT, true);
+		ini.Get("DSP", "EnableJIT", &m_DSPEnableJIT, true);
 		ini.Get("DSP", "DumpAudio", &m_DumpAudio, false);
 	#if defined __linux__ && HAVE_ALSA
 		ini.Get("DSP", "Backend", &sBackend, BACKEND_ALSA);

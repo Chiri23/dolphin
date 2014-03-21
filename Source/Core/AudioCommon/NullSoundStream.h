@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include <stdlib.h>
-#include "SoundStream.h"
+#include <cstdlib>
+#include "AudioCommon/SoundStream.h"
 
 #define BUF_SIZE (48000 * 4 / 32)
 
-class NullSound : public SoundStream
+class NullSound final : public SoundStream
 {
 	// playback position
 	short realtimeBuffer[BUF_SIZE / sizeof(short)];
@@ -21,12 +21,11 @@ public:
 
 	virtual ~NullSound() {}
 
-	virtual bool Start();
-	virtual void SoundLoop();
-	virtual void SetVolume(int volume);
-	virtual void Stop();
-	virtual void Clear(bool mute);
+	virtual bool Start() override;
+	virtual void SoundLoop() override;
+	virtual void SetVolume(int volume) override;
+	virtual void Stop() override;
+	virtual void Clear(bool mute) override;
 	static bool isValid() { return true; }
-	virtual bool usesMixer() const { return true; }
-	virtual void Update();
+	virtual void Update() override;
 };

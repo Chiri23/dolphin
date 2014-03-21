@@ -8,9 +8,9 @@
 #include <AudioUnit/AudioUnit.h>
 #endif
 
-#include "SoundStream.h"
+#include "AudioCommon/SoundStream.h"
 
-class CoreAudioSound : public SoundStream
+class CoreAudioSound final : public SoundStream
 {
 #ifdef __APPLE__
 public:
@@ -23,9 +23,6 @@ public:
 	virtual void Stop();
 
 	static bool isValid() {
-		return true;
-	}
-	virtual bool usesMixer() const {
 		return true;
 	}
 

@@ -9,17 +9,16 @@
 // performance hit, it's not enabled by default, but it's useful for
 // locating performance issues.
 
-#include "Common.h"
+#include "disasm.h"
+
+#include "Common/Common.h"
+#include "Common/MemoryUtil.h"
+#include "Core/PowerPC/JitInterface.h"
+#include "Core/PowerPC/JitCommon/JitBase.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
-
-#include "JitBase.h"
-#include "MemoryUtil.h"
-#include "disasm.h"
-
-#include "../JitInterface.h"
 
 #if defined USE_OPROFILE && USE_OPROFILE
 #include <opagent.h>
@@ -47,7 +46,7 @@ using namespace Gen;
 #endif
 		blocks = new JitBlock[MAX_NUM_BLOCKS];
 		blockCodePointers = new const u8*[MAX_NUM_BLOCKS];
-		if (iCache == 0 && iCacheEx == 0 && iCacheVMEM == 0)
+		if (iCache == nullptr && iCacheEx == nullptr && iCacheVMEM == nullptr)
 		{
 			iCache = new u8[JIT_ICACHE_SIZE];
 			iCacheEx = new u8[JIT_ICACHEEX_SIZE];
@@ -57,7 +56,7 @@ using namespace Gen;
 		{
 			PanicAlert("JitBaseBlockCache::Init() - iCache is already initialized");
 		}
-		if (iCache == 0 || iCacheEx == 0 || iCacheVMEM == 0)
+		if (iCache == nullptr || iCacheEx == nullptr || iCacheVMEM == nullptr)
 		{
 			PanicAlert("JitBaseBlockCache::Init() - unable to allocate iCache");
 		}
@@ -71,24 +70,24 @@ using namespace Gen;
 	{
 		delete[] blocks;
 		delete[] blockCodePointers;
-		if (iCache != 0)
+		if (iCache != nullptr)
 			delete[] iCache;
-		iCache = 0;
-		if (iCacheEx != 0)
+		iCache = nullptr;
+		if (iCacheEx != nullptr)
 			delete[] iCacheEx;
-		iCacheEx = 0;
-		if (iCacheVMEM != 0)
+		iCacheEx = nullptr;
+		if (iCacheVMEM != nullptr)
 			delete[] iCacheVMEM;
-		iCacheVMEM = 0;
-		blocks = 0;
-		blockCodePointers = 0;
+		iCacheVMEM = nullptr;
+		blocks = nullptr;
+		blockCodePointers = nullptr;
 		num_blocks = 0;
 #if defined USE_OPROFILE && USE_OPROFILE
 		op_close_agent(agent);
 #endif
 
 #ifdef USE_VTUNE
-		iJIT_NotifyEvent(iJVM_EVENT_TYPE_SHUTDOWN, NULL);
+		iJIT_NotifyEvent(iJVM_EVENT_TYPE_SHUTDOWN, nullptr);
 #endif
 	}
 

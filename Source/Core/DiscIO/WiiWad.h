@@ -5,15 +5,13 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <map>
 
-#include "CommonTypes.h"
-#include "Blob.h"
-#include "Volume.h"
+#include "Common/CommonTypes.h"
 
 namespace DiscIO
 {
+
+class IBlobReader;
 
 class WiiWAD
 {

@@ -1,31 +1,29 @@
+#include "Common/Common.h"
 
-#include "Common.h"
-
-#include "Statistics.h"
-#include "OpcodeDecoding.h"
-#include "IndexGenerator.h"
-#include "VertexShaderManager.h"
-#include "PixelShaderManager.h"
-#include "NativeVertexFormat.h"
-#include "TextureCacheBase.h"
-#include "RenderBase.h"
-#include "BPStructs.h"
-#include "XFMemory.h"
-#include "Debugger.h"
-#include "PerfQueryBase.h"
-
-#include "VertexManagerBase.h"
-#include "MainBase.h"
-#include "VideoConfig.h"
+#include "VideoCommon/BPStructs.h"
+#include "VideoCommon/Debugger.h"
+#include "VideoCommon/IndexGenerator.h"
+#include "VideoCommon/MainBase.h"
+#include "VideoCommon/NativeVertexFormat.h"
+#include "VideoCommon/OpcodeDecoding.h"
+#include "VideoCommon/PerfQueryBase.h"
+#include "VideoCommon/PixelShaderManager.h"
+#include "VideoCommon/RenderBase.h"
+#include "VideoCommon/Statistics.h"
+#include "VideoCommon/TextureCacheBase.h"
+#include "VideoCommon/VertexManagerBase.h"
+#include "VideoCommon/VertexShaderManager.h"
+#include "VideoCommon/VideoConfig.h"
+#include "VideoCommon/XFMemory.h"
 
 // :chiri: nvapi
-#include "../../../nvapi.h"
+#include "../../nvapi.h"
 namespace DX11
 {
 	void *GetStereoHandle();
 }
 // :chiri: gameid
-#include "ConfigManager.h"
+#include "Core/ConfigManager.h"
 u32 VertexManager::gameId;
 // :chiri: debugging
 #include <set>
@@ -84,7 +82,7 @@ void VertexManager::PrepareForAdditionalData(int primitive, u32 count, u32 strid
 	{
 		Flush();
 
-		if(count > IndexGenerator::GetRemainingIndices())
+		if (count > IndexGenerator::GetRemainingIndices())
 			ERROR_LOG(VIDEO, "Too little remaining index values. Use 32-bit or reset them on flush.");
 		if (count > GetRemainingIndices(primitive))
 			ERROR_LOG(VIDEO, "VertexManager: Buffer not large enough for all indices! "
@@ -95,7 +93,7 @@ void VertexManager::PrepareForAdditionalData(int primitive, u32 count, u32 strid
 	}
 
 	// need to alloc new buffer
-	if(IsFlushed)
+	if (IsFlushed)
 	{
 		g_vertex_manager->ResetBuffer(stride);
 		IsFlushed = false;
@@ -106,7 +104,7 @@ u32 VertexManager::GetRemainingIndices(int primitive)
 {
 	u32 index_len = MAXIBUFFERSIZE - IndexGenerator::GetIndexLen();
 
-	if(g_Config.backend_info.bSupportsPrimitiveRestart)
+	if (g_Config.backend_info.bSupportsPrimitiveRestart)
 	{
 		switch (primitive)
 		{
@@ -577,13 +575,15 @@ void VertexManager::Flush()
 	VertexShaderManager::SetConstants();
 	PixelShaderManager::SetConstants();
 
-	bool useDstAlpha = !g_ActiveConfig.bDstAlphaPass && bpmem.dstalpha.enable && bpmem.blendmode.alphaupdate
-		&& bpmem.zcontrol.pixel_format == PIXELFMT_RGBA6_Z24;
+	bool useDstAlpha = !g_ActiveConfig.bDstAlphaPass &&
+	                   bpmem.dstalpha.enable &&
+	                   bpmem.blendmode.alphaupdate &&
+	                   bpmem.zcontrol.pixel_format == PIXELFMT_RGBA6_Z24;
 
-	if(PerfQueryBase::ShouldEmulate())
+	if (PerfQueryBase::ShouldEmulate())
 		g_perf_query->EnableQuery(bpmem.zcontrol.early_ztest ? PQG_ZCOMP_ZCOMPLOC : PQG_ZCOMP);
 	g_vertex_manager->vFlush(useDstAlpha);
-	if(PerfQueryBase::ShouldEmulate())
+	if (PerfQueryBase::ShouldEmulate())
 		g_perf_query->DisableQuery(bpmem.zcontrol.early_ztest ? PQG_ZCOMP_ZCOMPLOC : PQG_ZCOMP);
 
 	GFX_DEBUGGER_PAUSE_AT(NEXT_FLUSH, true);

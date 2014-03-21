@@ -8,8 +8,8 @@
 #include <map>
 #include <vector>
 
-#include "../Gekko.h"
-#include "../PPCAnalyst.h"
+#include "Core/PowerPC/Gekko.h"
+#include "Core/PowerPC/PPCAnalyst.h"
 
 // Define this in order to get VTune profile support for the Jit generated code.
 // Add the VTune include/lib directories to the project directories to get this to build.
@@ -89,8 +89,8 @@ class JitBaseBlockCache
 
 public:
 	JitBaseBlockCache() :
-		blockCodePointers(0), blocks(0), num_blocks(0),
-		iCache(0), iCacheEx(0), iCacheVMEM(0) {}
+		blockCodePointers(nullptr), blocks(nullptr), num_blocks(0),
+		iCache(nullptr), iCacheEx(nullptr), iCacheVMEM(nullptr) {}
 	int AllocateBlock(u32 em_address);
 	void FinalizeBlock(int block_num, bool block_link, const u8 *code_ptr);
 

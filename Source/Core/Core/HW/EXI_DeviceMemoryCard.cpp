@@ -2,19 +2,19 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "FileUtil.h"
-#include "StringUtil.h"
-#include "../Core.h"
-#include "../CoreTiming.h"
+#include "Common/Common.h"
+#include "Common/FileUtil.h"
+#include "Common/StringUtil.h"
 
-#include "../ConfigManager.h"
-#include "../Movie.h"
-#include "EXI.h"
-#include "EXI_Device.h"
-#include "EXI_DeviceMemoryCard.h"
-#include "Sram.h"
-#include "GCMemcard.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/Movie.h"
+#include "Core/HW/EXI.h"
+#include "Core/HW/EXI_Device.h"
+#include "Core/HW/EXI_DeviceMemoryCard.h"
+#include "Core/HW/GCMemcard.h"
+#include "Core/HW/Sram.h"
 
 #define MC_STATUS_BUSY              0x80
 #define MC_STATUS_UNLOCKED          0x40
@@ -108,7 +108,7 @@ void innerFlush(FlushData* data)
 	if (!pFile)
 	{
 		std::string dir;
-		SplitPath(data->filename, &dir, 0, 0);
+		SplitPath(data->filename, &dir, nullptr, nullptr);
 		if (!File::IsDirectory(dir))
 			File::CreateFullPath(dir);
 		pFile.Open(data->filename, "wb");
@@ -134,7 +134,7 @@ void innerFlush(FlushData* data)
 // Flush memory card contents to disc
 void CEXIMemoryCard::Flush(bool exiting)
 {
-	if(!m_bDirty)
+	if (!m_bDirty)
 		return;
 
 	if (!Core::g_CoreStartupParameter.bEnableMemcardSaving)
@@ -145,7 +145,7 @@ void CEXIMemoryCard::Flush(bool exiting)
 		flushThread.join();
 	}
 
-	if(!exiting)
+	if (!exiting)
 		Core::DisplayMessage(StringFromFormat("Writing to memory card %c", card_index ? 'B' : 'A'), 1000);
 
 	flushData.filename = m_strFilename;
@@ -166,7 +166,7 @@ CEXIMemoryCard::~CEXIMemoryCard()
 	CoreTiming::RemoveEvent(et_this_card);
 	Flush(true);
 	delete[] memory_card_content;
-	memory_card_content = NULL;
+	memory_card_content = nullptr;
 
 	if (flushThread.joinable())
 	{
@@ -423,7 +423,7 @@ void CEXIMemoryCard::TransferByte(u8 &byte)
 				break;
 			}
 
-			if(m_uPosition >= 5)
+			if (m_uPosition >= 5)
 				programming_buffer[((m_uPosition - 5) & 0x7F)] = byte; // wrap around after 128 bytes
 
 			byte = 0xFF;
@@ -482,8 +482,8 @@ void CEXIMemoryCard::DoState(PointerWrap &p)
 IEXIDevice* CEXIMemoryCard::FindDevice(TEXIDevices device_type, int customIndex)
 {
 	if (device_type != m_deviceType)
-		return NULL;
+		return nullptr;
 	if (customIndex != card_index)
-		return NULL;
+		return nullptr;
 	return this;
 }

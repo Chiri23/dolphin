@@ -4,28 +4,32 @@
 
 #pragma once
 
-#include <wx/wx.h>
-#include <wx/sizer.h>
-#include <wx/filepicker.h>
-#include <wx/statbmp.h>
-#include <wx/imaglist.h>
-#include <wx/treectrl.h>
-#include <wx/gbsizer.h>
-#include <wx/textctrl.h>
-#include <wx/notebook.h>
-#include <wx/mimetype.h>
-#include <wx/colour.h>
-#include <wx/listbox.h>
-
+#include <cstddef>
 #include <string>
 #include <vector>
+#include <wx/arrstr.h>
+#include <wx/dialog.h>
+#include <wx/panel.h>
 
-#include "ActionReplay.h"
+#include "Common/CommonTypes.h"
+#include "Common/IniFile.h"
 
-#include "GeckoCodeDiag.h"
+class wxButton;
+class wxCheckBox;
+class wxCheckListBox;
+class wxChoice;
+class wxCloseEvent;
+class wxCommandEvent;
+class wxEvent;
+class wxListBox;
+class wxNotebook;
+class wxRadioButton;
+class wxStaticBox;
+class wxStaticText;
+class wxTextCtrl;
+class wxWindow;
 
-#include "Filesystem.h"
-#include "IniFile.h"
+namespace Gecko { class CodeConfigPanel; }
 
 class CreateCodeDialog : public wxDialog
 {

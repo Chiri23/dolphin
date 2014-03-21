@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "SoundStream.h"
-#include "Thread.h"
+#include "AudioCommon/SoundStream.h"
+#include "Common/Thread.h"
 
 #if defined(HAVE_AO) && HAVE_AO
 #include <ao/ao.h>
 #endif
 
-class AOSound : public SoundStream
+class AOSound final : public SoundStream
 {
 #if defined(HAVE_AO) && HAVE_AO
 	std::thread thread;
@@ -31,21 +31,17 @@ public:
 
 	virtual ~AOSound();
 
-	virtual bool Start();
+	virtual bool Start() override;
 
-	virtual void SoundLoop();
+	virtual void SoundLoop() override;
 
-	virtual void Stop();
+	virtual void Stop() override;
 
 	static bool isValid() {
 		return true;
 	}
 
-	virtual bool usesMixer() const {
-		return true;
-	}
-
-	virtual void Update();
+	virtual void Update() override;
 
 #else
 public:

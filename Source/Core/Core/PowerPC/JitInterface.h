@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "ChunkFile.h"
-#include "CPUCoreBase.h"
+#include <string>
+#include "Common/ChunkFile.h"
+#include "Core/PowerPC/CPUCoreBase.h"
 
 namespace JitInterface
 {
@@ -16,7 +17,7 @@ namespace JitInterface
 	CPUCoreBase *GetCore();
 
 	// Debugging
-	void WriteProfileResults(const char *filename);
+	void WriteProfileResults(const std::string& filename);
 
 	// Memory Utilities
 	bool IsInCodeSpace(u8 *ptr);

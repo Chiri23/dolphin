@@ -4,30 +4,24 @@
 
 #include <cmath>
 
-#include "Attachment/Classic.h"
-#include "Attachment/Nunchuk.h"
-#include "Attachment/Guitar.h"
-#include "Attachment/Drums.h"
-#include "Attachment/Turntable.h"
+#include "Common/Common.h"
+#include "Common/Timer.h"
 
-#include "WiimoteEmu.h"
-#include "WiimoteHid.h"
+#include "Core/ConfigManager.h"
+#include "Core/Host.h"
+#include "Core/Movie.h"
+#include "Core/NetPlayClient.h"
 
-#include "../WiimoteReal/WiimoteReal.h"
-
-#include "Timer.h"
-#include "Common.h"
-#include "../../Host.h"
-#include "../../ConfigManager.h"
-
-#include "UDPTLayer.h"
-
-inline double round(double x) { return (x-floor(x))>0.5 ? ceil(x) : floor(x); } //because damn MSVSC doesen't comply to C99
-
-#include "MatrixMath.h"
-
-#include "../../Movie.h"
-#include "NetPlayClient.h"
+#include "Core/HW/WiimoteEmu/MatrixMath.h"
+#include "Core/HW/WiimoteEmu/UDPTLayer.h"
+#include "Core/HW/WiimoteEmu/WiimoteEmu.h"
+#include "Core/HW/WiimoteEmu/WiimoteHid.h"
+#include "Core/HW/WiimoteEmu/Attachment/Classic.h"
+#include "Core/HW/WiimoteEmu/Attachment/Drums.h"
+#include "Core/HW/WiimoteEmu/Attachment/Guitar.h"
+#include "Core/HW/WiimoteEmu/Attachment/Nunchuk.h"
+#include "Core/HW/WiimoteEmu/Attachment/Turntable.h"
+#include "Core/HW/WiimoteReal/WiimoteReal.h"
 
 namespace
 {
@@ -263,7 +257,7 @@ Wiimote::Wiimote( const unsigned int index )
 	: m_index(index)
 	, ir_sin(0)
 	, ir_cos(1)
-// , m_sound_stream( NULL )
+// , m_sound_stream( nullptr )
 {
 	// ---- set up all the controls ----
 
@@ -345,7 +339,7 @@ bool Wiimote::Step()
 	m_rumble->controls[0]->control_ref->State(m_rumble_on);
 
 	// when a movie is active, this button status update is disabled (moved), because movies only record data reports.
-	if(!(Movie::IsPlayingInput() || Movie::IsRecordingInput()) || NetPlay::IsNetPlayRunning())
+	if (!(Movie::IsPlayingInput() || Movie::IsRecordingInput()) || NetPlay::IsNetPlayRunning())
 	{
 		UpdateButtonsStatus(has_focus);
 	}
@@ -403,7 +397,7 @@ void Wiimote::UpdateButtonsStatus(bool has_focus)
 void Wiimote::GetCoreData(u8* const data)
 {
 	// when a movie is active, the button update happens here instead of Wiimote::Step, to avoid potential desync issues.
-	if(Movie::IsPlayingInput() || Movie::IsRecordingInput() || NetPlay::IsNetPlayRunning())
+	if (Movie::IsPlayingInput() || Movie::IsRecordingInput() || NetPlay::IsNetPlayRunning())
 	{
 		UpdateButtonsStatus(HAS_FOCUS);
 	}
@@ -526,8 +520,8 @@ void Wiimote::GetIRData(u8* const data, bool use_accel)
 			MatrixTransformVertex(tot,v[i]);
 			if ((v[i].x<-1)||(v[i].x>1)||(v[i].y<-1)||(v[i].y>1))
 				continue;
-			x[i]=(u16)round((v[i].x+1)/2*(camWidth-1));
-			y[i]=(u16)round((v[i].y+1)/2*(camHeight-1));
+			x[i] = (u16)lround((v[i].x+1)/2*(camWidth-1));
+			y[i] = (u16)lround((v[i].y+1)/2*(camHeight-1));
 		}
 		// PanicAlert("%f %f\n%f %f\n%f %f\n%f %f\n%d %d\n%d %d\n%d %d\n%d %d",
 		//      v[0].x,v[0].y,v[1].x,v[1].y,v[2].x,v[2].y,v[3].x,v[3].y,
@@ -652,13 +646,10 @@ void Wiimote::Update()
 	u8 data[MAX_PAYLOAD];
 	memset(data, 0, sizeof(data));
 
-	// figure out what data we need
-	s8 rptf_size = MAX_PAYLOAD;
-
 	Movie::SetPolledDevice();
 
 	const ReportFeatures& rptf = reporting_mode_features[m_reporting_mode - WM_REPORT_CORE];
-	rptf_size = rptf.size;
+	s8 rptf_size = rptf.size;
 	if (Movie::IsPlayingInput() && Movie::PlayWiimote(m_index, data, rptf, m_reg_ir.mode))
 	{
 		if (rptf.core)

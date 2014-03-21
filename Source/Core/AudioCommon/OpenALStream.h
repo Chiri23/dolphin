@@ -4,8 +4,11 @@
 
 #pragma once
 
-#include "SoundStream.h"
-#include "Thread.h"
+#include "AudioCommon/SoundStream.h"
+#include "Common/Thread.h"
+#include "Core/Core.h"
+#include "Core/HW/AudioInterface.h"
+#include "Core/HW/SystemTimers.h"
 
 #if defined HAVE_OPENAL && HAVE_OPENAL
 #ifdef _WIN32
@@ -21,9 +24,6 @@
 #include <AL/alext.h>
 #endif
 
-#include "Core.h"
-#include "HW/SystemTimers.h"
-#include "HW/AudioInterface.h"
 #include <soundtouch/SoundTouch.h>
 #include <soundtouch/STTypes.h>
 
@@ -40,25 +40,24 @@
 #define FRAME_SURROUND_FLOAT    SURROUND_CHANNELS * SIZE_FLOAT
 #endif
 
-class OpenALStream: public SoundStream
+class OpenALStream final : public SoundStream
 {
 #if defined HAVE_OPENAL && HAVE_OPENAL
 public:
-	OpenALStream(CMixer *mixer, void *hWnd = NULL)
+	OpenALStream(CMixer *mixer, void *hWnd = nullptr)
 		: SoundStream(mixer)
 		, uiSource(0)
 	{}
 
 	virtual ~OpenALStream() {}
 
-	virtual bool Start();
-	virtual void SoundLoop();
-	virtual void SetVolume(int volume);
-	virtual void Stop();
-	virtual void Clear(bool mute);
+	virtual bool Start() override;
+	virtual void SoundLoop() override;
+	virtual void SetVolume(int volume) override;
+	virtual void Stop() override;
+	virtual void Clear(bool mute) override;
 	static bool isValid() { return true; }
-	virtual bool usesMixer() const { return true; }
-	virtual void Update();
+	virtual void Update() override;
 
 private:
 	std::thread thread;

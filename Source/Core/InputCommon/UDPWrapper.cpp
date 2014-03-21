@@ -2,11 +2,11 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "UDPWrapper.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "InputCommon/UDPWrapper.h"
 
 const std::string DefaultPort(const int index)
 {
@@ -18,7 +18,7 @@ const std::string DefaultPort(const int index)
 
 UDPWrapper::UDPWrapper(int indx, const char* const _name) :
 	ControllerEmu::ControlGroup(_name,GROUP_TYPE_UDPWII),
-	inst(NULL), index(indx),
+	inst(nullptr), index(indx),
 	updIR(false),updAccel(false),
 	updButt(false),udpEn(false)
 	, port(DefaultPort(indx))
@@ -68,13 +68,13 @@ void UDPWrapper::SaveConfig(IniFile::Section *sec, const std::string& defdev, co
 
 void UDPWrapper::Refresh()
 {
-	bool udpAEn=(inst!=NULL);
-	if (udpEn&&udpAEn)
+	bool udpAEn=(inst!=nullptr);
+	if (udpEn && udpAEn)
 	{
-		if (strcmp(inst->getPort(),port.c_str()))
+		if (inst->getPort() == port)
 		{
 			delete inst;
-			inst = new UDPWiimote(port.c_str(),"Dolphin-Emu",index); //TODO: Changeable display name
+			inst = new UDPWiimote(port, "Dolphin-Emu", index); //TODO: Changeable display name
 		}
 		return;
 	}
@@ -82,11 +82,11 @@ void UDPWrapper::Refresh()
 	{
 		if (inst)
 			delete inst;
-		inst = NULL;
+		inst = nullptr;
 		return;
 	}
 	//else
-	inst = new UDPWiimote(port.c_str(),"Dolphin-Emu",index);
+	inst = new UDPWiimote(port, "Dolphin-Emu", index);
 }
 
 UDPWrapper::~UDPWrapper()

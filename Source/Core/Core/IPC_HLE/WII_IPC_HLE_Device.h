@@ -4,11 +4,13 @@
 
 #pragma once
 
-#include <string>
 #include <queue>
-#include "../HW/Memmap.h"
+#include <string>
 
-#include "ChunkFile.h"
+#include "Common/ChunkFile.h"
+#include "Common/StringUtil.h"
+
+#include "Core/HW/Memmap.h"
 
 #define FS_SUCCESS      (u32)0      // Success
 #define FS_EACCES       (u32)-1     // Permission denied
@@ -222,7 +224,7 @@ public:
 	{
 	}
 
-	bool Open(u32 CommandAddress, u32 Mode)
+	bool Open(u32 CommandAddress, u32 Mode) override
 	{
 		(void)Mode;
 		WARN_LOG(WII_IPC_HLE, "%s faking Open()", m_Name.c_str());
@@ -230,7 +232,7 @@ public:
 		m_Active = true;
 		return true;
 	}
-	bool Close(u32 CommandAddress, bool bForce = false)
+	bool Close(u32 CommandAddress, bool bForce = false) override
 	{
 		WARN_LOG(WII_IPC_HLE, "%s faking Close()", m_Name.c_str());
 		if (!bForce)
@@ -239,13 +241,13 @@ public:
 		return true;
 	}
 
-	bool IOCtl(u32 CommandAddress)
+	bool IOCtl(u32 CommandAddress) override
 	{
 		WARN_LOG(WII_IPC_HLE, "%s faking IOCtl()", m_Name.c_str());
 		Memory::Write_U32(FS_SUCCESS, CommandAddress + 4);
 		return true;
 	}
-	bool IOCtlV(u32 CommandAddress)
+	bool IOCtlV(u32 CommandAddress) override
 	{
 		WARN_LOG(WII_IPC_HLE, "%s faking IOCtlV()", m_Name.c_str());
 		Memory::Write_U32(FS_SUCCESS, CommandAddress + 4);

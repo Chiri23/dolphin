@@ -54,8 +54,10 @@
     <ClInclude Include="CommonFuncs.h" />
     <ClInclude Include="CommonPaths.h" />
     <ClInclude Include="CommonTypes.h" />
+    <ClInclude Include="ConsoleListener.h" />
     <ClInclude Include="CPUDetect.h" />
-    <ClInclude Include="Crypto\tools.h" />
+    <ClInclude Include="Crypto\bn.h" />
+    <ClInclude Include="Crypto\ec.h" />
     <ClInclude Include="DebugInterface.h" />
     <ClInclude Include="ExtendedTrace.h" />
     <ClInclude Include="FifoQueue.h" />
@@ -73,6 +75,7 @@
     <ClInclude Include="MemoryUtil.h" />
     <ClInclude Include="MsgHandler.h" />
     <ClInclude Include="NandPaths.h" />
+    <ClInclude Include="Network.h" />
     <ClInclude Include="SDCardUtil.h" />
     <ClInclude Include="SettingsHandler.h" />
     <ClInclude Include="stdafx.h" />
@@ -92,6 +95,7 @@
     <ClCompile Include="BreakPoints.cpp" />
     <ClCompile Include="CDUtils.cpp" />
     <ClCompile Include="ColorUtil.cpp" />
+    <ClCompile Include="ConsoleListener.cpp" />
     <ClCompile Include="Crypto\bn.cpp" />
     <ClCompile Include="Crypto\ec.cpp" />
     <ClCompile Include="ExtendedTrace.cpp" />
@@ -106,6 +110,7 @@
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="MsgHandler.cpp" />
     <ClCompile Include="NandPaths.cpp" />
+    <ClCompile Include="Network.cpp" />
     <ClCompile Include="SDCardUtil.cpp" />
     <ClCompile Include="SettingsHandler.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -122,6 +127,7 @@
     <ClCompile Include="x64CPUDetect.cpp" />
     <ClCompile Include="x64Emitter.cpp" />
     <ClCompile Include="x64FPURoundMode.cpp" />
+    <ClCompile Include="XSaveWorkaround.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

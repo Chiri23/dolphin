@@ -1,16 +1,16 @@
-// Copyright 2013 Dolphin Emulator Project
+// Copyright 2014 Dolphin Emulator Project
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
 #pragma once
 
-#include "../PPCAnalyst.h"
-#include "ArmEmitter.h"
-#include "../JitArm32/JitArmCache.h"
-#include "../JitILCommon/JitILBase.h"
-#include "../JitILCommon/IR.h"
-#include "../JitCommon/JitBase.h"
-#include "JitILAsm.h"
+#include "Common/ArmEmitter.h"
+#include "Core/PowerPC/PPCAnalyst.h"
+#include "Core/PowerPC/JitArm32/JitArmCache.h"
+#include "Core/PowerPC/JitArmIL/JitILAsm.h"
+#include "Core/PowerPC/JitCommon/JitBase.h"
+#include "Core/PowerPC/JitILCommon/IR.h"
+#include "Core/PowerPC/JitILCommon/JitILBase.h"
 
 #define PPCSTATE_OFF(elem) ((s32)STRUCT_OFF(PowerPC::ppcState, elem) - (s32)STRUCT_OFF(PowerPC::ppcState, spr[0]))
 class JitArmIL : public JitILBase, public ArmGen::ARMXCodeBlock
@@ -37,7 +37,7 @@ public:
 
 	JitBaseBlockCache *GetBlockCache() { return &blocks; }
 
-	const u8 *BackPatch(u8 *codePtr, u32 em_address, void *ctx) { return NULL; }
+	const u8 *BackPatch(u8 *codePtr, u32 em_address, void *ctx) { return nullptr; }
 
 	bool IsInCodeSpace(u8 *ptr) { return IsInSpace(ptr); }
 
@@ -66,7 +66,7 @@ public:
 
 	// OPCODES
 	void unknown_instruction(UGeckoInstruction inst);
-	void Default(UGeckoInstruction inst);
+	void FallBackToInterpreter(UGeckoInstruction inst);
 	void DoNothing(UGeckoInstruction inst);
 	void HLEFunction(UGeckoInstruction inst);
 	void Break(UGeckoInstruction inst);

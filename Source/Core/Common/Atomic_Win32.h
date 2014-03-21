@@ -2,11 +2,14 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
+// IWYU pragma: private, include "Common/Atomic.h"
+
 #pragma once
 
-#include "Common.h"
 #include <intrin.h>
 #include <Windows.h>
+
+#include "Common/Common.h"
 
 // Atomic operations are performed in a single step by the CPU. It is
 // impossible for other threads to see the operation "half-done."

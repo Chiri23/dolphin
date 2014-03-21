@@ -2,21 +2,23 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "Thread.h"
-#include "Atomic.h"
-#include "ConfigManager.h"
-#include "Core.h"
-#include "CoreTiming.h"
-#include "HW/Memmap.h"
-#include "HW/MMIO.h"
-#include "HW/ProcessorInterface.h"
+#include "Common/Atomic.h"
+#include "Common/ChunkFile.h"
+#include "Common/Common.h"
+#include "Common/FPURoundMode.h"
+#include "Common/MathUtil.h"
+#include "Common/Thread.h"
 
-#include "VideoBackend.h"
-#include "SWCommandProcessor.h"
-#include "ChunkFile.h"
-#include "MathUtil.h"
-#include "OpcodeDecoder.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/MMIO.h"
+#include "Core/HW/ProcessorInterface.h"
+
+#include "VideoBackends/Software/OpcodeDecoder.h"
+#include "VideoBackends/Software/SWCommandProcessor.h"
+#include "VideoBackends/Software/VideoBackend.h"
 
 
 namespace SWCommandProcessor
@@ -99,7 +101,7 @@ void Init()
 	interruptSet = false;
 	interruptWaiting = false;
 
-	g_pVideoData = 0;
+	g_pVideoData = nullptr;
 	g_bSkipCurrentFrame = false;
 }
 

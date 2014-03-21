@@ -14,14 +14,14 @@
 
 #pragma once
 
-#include "VideoCommon.h"
-#include "Thread.h"
-#include "MathUtil.h"
-#include "NativeVertexFormat.h"
-#include "FramebufferManagerBase.h"
-#include "BPMemory.h"
-
 #include <string>
+
+#include "Common/MathUtil.h"
+#include "Common/Thread.h"
+#include "VideoCommon/BPMemory.h"
+#include "VideoCommon/FramebufferManagerBase.h"
+#include "VideoCommon/NativeVertexFormat.h"
+#include "VideoCommon/VideoCommon.h"
 
 // TODO: Move these out of here.
 extern int frameCount;
@@ -90,10 +90,10 @@ public:
 	static float EFBToScaledYf(float y) { return y * ((float)GetTargetHeight() / (float)EFB_HEIGHT); }
 
 	// Random utilities
-	static void SetScreenshot(const char *filename);
+	static void SetScreenshot(const std::string& filename);
 	static void DrawDebugText();
 
-	virtual void RenderText(const char* pstr, int left, int top, u32 color) = 0;
+	virtual void RenderText(const std::string& text, int left, int top, u32 color) = 0;
 
 	virtual void ClearScreen(const EFBRectangle& rc, bool colorEnable, bool alphaEnable, bool zEnable, u32 color, u32 z) = 0;
 	virtual void ReinterpretPixelData(unsigned int convtype) = 0;

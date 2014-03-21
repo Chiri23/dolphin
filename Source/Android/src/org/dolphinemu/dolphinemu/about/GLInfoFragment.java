@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Dolphin Emulator Project
+ * Copyright 2014 Dolphin Emulator Project
  * Licensed under GPLv2
  * Refer to the license.txt file included.
  */
@@ -31,8 +31,6 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public final class GLInfoFragment extends ListFragment
 {
-	private final EGLHelper eglHelper = new EGLHelper(EGLHelper.EGL_OPENGL_BIT);
-
 	private final Limit[] Limits = {
 			new Limit("Vendor", GL10.GL_VENDOR, Type.STRING),
 			new Limit("Version", GL10.GL_VERSION, Type.STRING),
@@ -43,13 +41,15 @@ public final class GLInfoFragment extends ListFragment
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
+		final EGLHelper eglHelper = new EGLHelper(EGLHelper.EGL_OPENGL_BIT);
+
 		ListView rootView = (ListView) inflater.inflate(R.layout.gamelist_listview, container, false);
-		List<AboutActivity.AboutFragmentItem> Input = new ArrayList<AboutActivity.AboutFragmentItem>();
+		List<AboutFragmentItem> Input = new ArrayList<AboutFragmentItem>();
 
 		for (Limit limit : Limits)
 		{
 			Log.i("GLInfoFragment", "Getting enum " + limit.name);
-			Input.add(new AboutActivity.AboutFragmentItem(limit.name, limit.GetValue(eglHelper)));
+			Input.add(new AboutFragmentItem(limit.name, limit.GetValue(eglHelper)));
 		}
 
 		// Get extensions manually
@@ -59,9 +59,9 @@ public final class GLInfoFragment extends ListFragment
 		{
 			extensionsBuilder.append(eglHelper.glGetStringi(GL10.GL_EXTENSIONS, i)).append('\n');
 		}
-		Input.add(new AboutActivity.AboutFragmentItem("OpenGL Extensions", extensionsBuilder.toString()));
+		Input.add(new AboutFragmentItem("OpenGL Extensions", extensionsBuilder.toString()));
 
-		AboutActivity.InfoFragmentAdapter adapter = new AboutActivity.InfoFragmentAdapter(getActivity(), R.layout.about_layout, Input);
+		AboutInfoFragmentAdapter adapter = new AboutInfoFragmentAdapter(getActivity(), R.layout.about_layout, Input);
 		rootView.setAdapter(adapter);
 
 		return rootView;

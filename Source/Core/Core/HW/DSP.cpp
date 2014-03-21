@@ -23,19 +23,19 @@
 // the just used buffer through the AXList (or whatever it might be called in
 // Nintendo games).
 
-#include "DSP.h"
+#include "Common/MemoryUtil.h"
 
-#include "../CoreTiming.h"
-#include "../Core.h"
-#include "CPU.h"
-#include "MemoryUtil.h"
-#include "Memmap.h"
-#include "MMIO.h"
-#include "ProcessorInterface.h"
-#include "AudioInterface.h"
-#include "../PowerPC/PowerPC.h"
-#include "../ConfigManager.h"
-#include "../DSPEmulator.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/DSPEmulator.h"
+#include "Core/HW/AudioInterface.h"
+#include "Core/HW/CPU.h"
+#include "Core/HW/DSP.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/MMIO.h"
+#include "Core/HW/ProcessorInterface.h"
+#include "Core/PowerPC/PowerPC.h"
 
 namespace DSP
 {
@@ -174,7 +174,7 @@ struct ARAMInfo
 		wii_mode = false;
 		size = ARAM_SIZE;
 		mask = ARAM_MASK;
-		ptr = NULL;
+		ptr = nullptr;
 	}
 };
 
@@ -280,12 +280,14 @@ void Init(bool hle)
 void Shutdown()
 {
 	if (!g_ARAM.wii_mode)
+	{
 		FreeMemoryPages(g_ARAM.ptr, g_ARAM.size);
-	g_ARAM.ptr = NULL;
+		g_ARAM.ptr = nullptr;
+	}
 
 	dsp_emulator->Shutdown();
 	delete dsp_emulator;
-	dsp_emulator = NULL;
+	dsp_emulator = nullptr;
 }
 
 void RegisterMMIO(MMIO::Mapping* mmio, u32 base)
@@ -563,7 +565,7 @@ void Do_ARAM_DMA()
 		{
 			while (g_arDMA.Cnt.count)
 			{
-				// These are logically seperated in code to show that a memory map has been set up
+				// These are logically separated in code to show that a memory map has been set up
 				// See below in the write section for more information
 				if ((g_ARAM_Info.Hex & 0xf) == 3)
 				{

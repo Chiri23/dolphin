@@ -4,9 +4,19 @@
 
 #pragma once
 
-#include <wx/wx.h>
-#include <wx/spinctrl.h>
-#include "ISOProperties.h"
+#include <wx/dialog.h>
+#include <wx/event.h>
+#include <wx/gdicmn.h>
+#include <wx/string.h>
+#include <wx/translation.h>
+#include <wx/windowid.h>
+
+#include "Common/IniFile.h"
+
+class wxCheckBox;
+class wxChoice;
+class wxTextCtrl;
+class wxWindow;
 
 class CPHackSettings : public wxDialog
 {
@@ -25,7 +35,6 @@ class CPHackSettings : public wxDialog
 		wxChoice *PHackChoice;
 		wxCheckBox *PHackSZNear;
 		wxCheckBox *PHackSZFar;
-		wxCheckBox *PHackExP;
 		wxTextCtrl *PHackZNear;
 		wxTextCtrl *PHackZFar;
 
@@ -35,7 +44,6 @@ class CPHackSettings : public wxDialog
 			ID_PHACK_SZFAR,
 			ID_PHACK_ZNEAR,
 			ID_PHACK_ZFAR,
-			ID_PHACK_EXP
 		};
 
 		IniFile PHPresetsIni;

@@ -2,9 +2,10 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
 #include <vector>
-#include "WiiMote_HID_Attr.h"
+
+#include "Common/Common.h"
+#include "Core/IPC_HLE/WiiMote_HID_Attr.h"
 
 #if 0
 // 0x00 (checked)
@@ -233,7 +234,7 @@ const u8* GetAttribPacket(u32 serviceHandle, u32 cont, u32& _size)
 		return packet4_0x10001;
 	}
 
-	return 0;
+	return nullptr;
 }
 
 // XXX keep these?

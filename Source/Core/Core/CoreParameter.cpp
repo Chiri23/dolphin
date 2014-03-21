@@ -2,26 +2,26 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "CommonPaths.h"
-#include "FileUtil.h"
-#include "StringUtil.h"
-#include "CDUtils.h"
-#include "NANDContentLoader.h"
-
-#include "VolumeCreator.h" // DiscIO
-
-#include "Boot/Boot.h" // Core
-#include "Boot/Boot_DOL.h"
-#include "CoreParameter.h"
-#include "ConfigManager.h"
-#include "Core.h" // for bWii
-#include "FifoPlayer/FifoDataFile.h"
-
 #include <cinttypes>
 
+#include "Common/CDUtils.h"
+#include "Common/Common.h"
+#include "Common/CommonPaths.h"
+#include "Common/FileUtil.h"
+#include "Common/StringUtil.h"
+
+#include "Core/ConfigManager.h"
+#include "Core/Core.h" // for bWii
+#include "Core/CoreParameter.h"
+#include "Core/Boot/Boot.h"
+#include "Core/Boot/Boot_DOL.h"
+#include "Core/FifoPlayer/FifoDataFile.h"
+
+#include "DiscIO/NANDContentLoader.h"
+#include "DiscIO/VolumeCreator.h"
+
 SCoreStartupParameter::SCoreStartupParameter()
-: hInstance(0),
+: hInstance(nullptr),
   bEnableDebugging(false), bAutomaticStart(false), bBootToPause(false),
   bJITNoBlockCache(false), bJITBlockLinking(true),
   bJITOff(false),
@@ -125,7 +125,7 @@ bool SCoreStartupParameter::AutoSetup(EBootBS2 _BootBS2)
 			}
 
 			std::string Extension;
-			SplitPath(m_strFilename, NULL, NULL, &Extension);
+			SplitPath(m_strFilename, nullptr, nullptr, &Extension);
 			if (!strcasecmp(Extension.c_str(), ".gcm") ||
 				!strcasecmp(Extension.c_str(), ".iso") ||
 				!strcasecmp(Extension.c_str(), ".wbfs") ||
@@ -135,7 +135,7 @@ bool SCoreStartupParameter::AutoSetup(EBootBS2 _BootBS2)
 			{
 				m_BootType = BOOT_ISO;
 				DiscIO::IVolume* pVolume = DiscIO::CreateVolumeFromFilename(m_strFilename);
-				if (pVolume == NULL)
+				if (pVolume == nullptr)
 				{
 					if (bootDrive)
 						PanicAlertT("Could not read \"%s\".  "
@@ -190,14 +190,14 @@ bool SCoreStartupParameter::AutoSetup(EBootBS2 _BootBS2)
 			}
 			else if (!strcasecmp(Extension.c_str(), ".elf"))
 			{
-				bWii = CBoot::IsElfWii(m_strFilename.c_str());
+				bWii = CBoot::IsElfWii(m_strFilename);
 				Region = USA_DIR;
 				m_BootType = BOOT_ELF;
 				bNTSC = true;
 			}
 			else if (!strcasecmp(Extension.c_str(), ".dol"))
 			{
-				CDolLoader dolfile(m_strFilename.c_str());
+				CDolLoader dolfile(m_strFilename);
 				bWii = dolfile.IsWii();
 				Region = USA_DIR;
 				m_BootType = BOOT_DOL;
@@ -223,7 +223,7 @@ bool SCoreStartupParameter::AutoSetup(EBootBS2 _BootBS2)
 				const DiscIO::IVolume* pVolume = DiscIO::CreateVolumeFromFilename(m_strFilename);
 				const DiscIO::INANDContentLoader& ContentLoader = DiscIO::CNANDContentManager::Access().GetNANDLoader(m_strFilename);
 
-				if (ContentLoader.GetContentByIndex(ContentLoader.GetBootIndex()) == NULL)
+				if (ContentLoader.GetContentByIndex(ContentLoader.GetBootIndex()) == nullptr)
 				{
 					//WAD is valid yet cannot be booted. Install instead.
 					u64 installed = DiscIO::CNANDContentManager::Access().Install_WiiWAD(m_strFilename);

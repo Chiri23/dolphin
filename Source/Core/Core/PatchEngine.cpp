@@ -15,20 +15,21 @@
 // [OnLoad]
 // 0x80020394=dword,0x4e800020
 
+#include <algorithm>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include <algorithm>
 
-#include "CommonPaths.h"
-#include "StringUtil.h"
-#include "PatchEngine.h"
-#include "HW/Memmap.h"
-#include "ActionReplay.h"
-#include "GeckoCode.h"
-#include "GeckoCodeConfig.h"
-#include "FileUtil.h"
-#include "ConfigManager.h"
+#include "Common/CommonPaths.h"
+#include "Common/FileUtil.h"
+#include "Common/StringUtil.h"
+
+#include "Core/ActionReplay.h"
+#include "Core/ConfigManager.h"
+#include "Core/GeckoCode.h"
+#include "Core/GeckoCodeConfig.h"
+#include "Core/PatchEngine.h"
+#include "Core/HW/Memmap.h"
 
 using namespace Common;
 
@@ -46,14 +47,13 @@ std::vector<Patch> onFrame;
 std::map<u32, int> speedHacks;
 std::vector<std::string> discList;
 
-void LoadPatchSection(const char *section, std::vector<Patch>& patches,
-                      IniFile& globalIni, IniFile& localIni)
+void LoadPatchSection(const std::string& section, std::vector<Patch>& patches, IniFile& globalIni, IniFile& localIni)
 {
 	// Load the name of all enabled patches
-	std::string enabledSectionName = std::string(section) + "_Enabled";
+	std::string enabledSectionName = section + "_Enabled";
 	std::vector<std::string> enabledLines;
 	std::set<std::string> enabledNames;
-	localIni.GetLines(enabledSectionName.c_str(), enabledLines);
+	localIni.GetLines(enabledSectionName, &enabledLines);
 	for (const std::string& line : enabledLines)
 	{
 		if (line.size() != 0 && line[0] == '$')
@@ -69,7 +69,7 @@ void LoadPatchSection(const char *section, std::vector<Patch>& patches,
 	{
 		std::vector<std::string> lines;
 		Patch currentPatch;
-		ini->GetLines(section, lines);
+		ini->GetLines(section, &lines);
 
 		for (std::string& line : lines)
 		{
@@ -80,7 +80,9 @@ void LoadPatchSection(const char *section, std::vector<Patch>& patches,
 			{
 				// Take care of the previous code
 				if (currentPatch.name.size())
+				{
 					patches.push_back(currentPatch);
+				}
 				currentPatch.entries.clear();
 
 				// Set active and name
@@ -93,7 +95,9 @@ void LoadPatchSection(const char *section, std::vector<Patch>& patches,
 				std::string::size_type loc = line.find_first_of('=', 0);
 
 				if (loc != std::string::npos)
+				{
 					line[loc] = ':';
+				}
 
 				std::vector<std::string> items;
 				SplitString(line, ':', items);
@@ -108,33 +112,41 @@ void LoadPatchSection(const char *section, std::vector<Patch>& patches,
 					pE.type = PatchType(std::find(PatchTypeStrings, PatchTypeStrings + 3, items[1]) - PatchTypeStrings);
 					success &= (pE.type != (PatchType)3);
 					if (success)
+					{
 						currentPatch.entries.push_back(pE);
+					}
 				}
 			}
 		}
 
 		if (currentPatch.name.size() && currentPatch.entries.size())
+		{
 			patches.push_back(currentPatch);
+		}
 	}
 }
 
-static void LoadDiscList(const char *section, std::vector<std::string> &_discList, IniFile &ini)
+static void LoadDiscList(const std::string& section, IniFile& ini)
 {
 	std::vector<std::string> lines;
-	if (!ini.GetLines(section, lines))
+	if (!ini.GetLines(section, &lines))
+	{
 		return;
+	}
 
 	for (const std::string& line : lines)
 	{
 		if (!line.empty())
-			_discList.push_back(line);
+		{
+			discList.push_back(line);
+		}
 	}
 }
 
-static void LoadSpeedhacks(const char *section, std::map<u32, int> &hacks, IniFile &ini)
+static void LoadSpeedhacks(const std::string& section, IniFile& ini)
 {
 	std::vector<std::string> keys;
-	ini.GetKeys(section, keys);
+	ini.GetKeys(section, &keys);
 	for (const std::string& key : keys)
 	{
 		std::string value;
@@ -146,7 +158,8 @@ static void LoadSpeedhacks(const char *section, std::map<u32, int> &hacks, IniFi
 			bool success = true;
 			success &= TryParse(key, &address);
 			success &= TryParse(value, &cycles);
-			if (success) {
+			if (success)
+			{
 				speedHacks[address] = (int)cycles;
 			}
 		}
@@ -176,8 +189,8 @@ void LoadPatches()
 	Gecko::LoadCodes(globalIni, localIni, gcodes);
 	Gecko::SetActiveCodes(gcodes);
 
-	LoadSpeedhacks("Speedhacks", speedHacks, merged);
-	LoadDiscList("DiscList", discList, merged);
+	LoadSpeedhacks("Speedhacks", merged);
+	LoadDiscList("DiscList", merged);
 }
 
 void ApplyPatches(const std::vector<Patch> &patches)

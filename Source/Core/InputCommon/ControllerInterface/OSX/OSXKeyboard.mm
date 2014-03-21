@@ -2,14 +2,14 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
+#include <sstream>
+
 #include <Foundation/Foundation.h>
 #include <IOKit/hid/IOHIDLib.h>
 #include <Cocoa/Cocoa.h>
 #include <wx/wx.h> // wxWidgets
 
-#include "OSXKeyboard.h"
-
-#include <sstream>
+#include "InputCommon/ControllerInterface/OSX/OSXKeyboard.h"
 
 namespace ciface
 {
@@ -40,7 +40,7 @@ Keyboard::Keyboard(IOHIDDeviceRef device, std::string name, int index, void *win
 		{
 			IOHIDElementRef e =
 			(IOHIDElementRef)CFArrayGetValueAtIndex(elements, i);
-			//DeviceElementDebugPrint(e, NULL);
+			//DeviceElementDebugPrint(e, nullptr);
 
 			AddInput(new Key(e, m_device));
 		}
@@ -61,7 +61,7 @@ bool Keyboard::UpdateInput()
 {
 	CGRect bounds = CGRectZero;
 	uint32_t windowid[1] = { m_windowid };
-	CFArrayRef windowArray = CFArrayCreate(NULL, (const void **) windowid, 1, NULL);
+	CFArrayRef windowArray = CFArrayCreate(nullptr, (const void **) windowid, 1, nullptr);
 	CFArrayRef windowDescriptions = CGWindowListCreateDescriptionFromArray(windowArray);
 	CFDictionaryRef windowDescription = (CFDictionaryRef) CFArrayGetValueAtIndex((CFArrayRef) windowDescriptions, 0);
 
@@ -69,7 +69,7 @@ bool Keyboard::UpdateInput()
 	{
 		CFDictionaryRef boundsDictionary = (CFDictionaryRef) CFDictionaryGetValue(windowDescription, kCGWindowBounds);
 
-		if (boundsDictionary != NULL)
+		if (boundsDictionary != nullptr)
 			CGRectMakeWithDictionaryRepresentation(boundsDictionary, &bounds);
 	}
 

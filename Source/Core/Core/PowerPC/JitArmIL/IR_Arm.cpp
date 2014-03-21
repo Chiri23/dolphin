@@ -1,14 +1,15 @@
-// Copyright 2013 Dolphin Emulator Project
+// Copyright 2014 Dolphin Emulator Project
 // Licensed under GPLv2
 // Refer to the license.txt file included.
-#include "../JitILCommon/IR.h"
-#include "../PPCTables.h"
-#include "../../CoreTiming.h"
-#include "../../HW/Memmap.h"
-#include "JitILAsm.h"
-#include "JitIL.h"
-#include "ArmEmitter.h"
-#include "../../Core.h"
+
+#include "Common/ArmEmitter.h"
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/HW/Memmap.h"
+#include "Core/PowerPC/PPCTables.h"
+#include "Core/PowerPC/JitArmIL/JitIL.h"
+#include "Core/PowerPC/JitArmIL/JitILAsm.h"
+#include "Core/PowerPC/JitILCommon/IR.h"
 
 using namespace IREmitter;
 using namespace ArmGen;
@@ -164,7 +165,7 @@ static void regWriteExit(RegInfo& RI, InstLoc dest) {
 }
 static void regStoreInstToPPCState(RegInfo& RI, unsigned width, InstLoc I, s32 offset) {
 	void (JitArmIL::*op)(ARMReg, ARMReg, Operand2, bool);
-	switch(width)
+	switch (width)
 	{
 		case 32:
 			op = &JitArmIL::STR;
@@ -309,7 +310,7 @@ static void DoWriteCode(IRBuilder* ibuild, JitArmIL* Jit, u32 exitAddress) {
 		case LoadGQR:
 		case BlockEnd:
 		case BlockStart:
-		case InterpreterFallback:
+		case FallBackToInterpreter:
 		case SystemCall:
 		case RFIExit:
 		case InterpreterBranch:
@@ -570,7 +571,7 @@ static void DoWriteCode(IRBuilder* ibuild, JitArmIL* Jit, u32 exitAddress) {
 			RI.regs[reg] = I;
 			break;
 		}
-		case InterpreterFallback: {
+		case FallBackToInterpreter: {
 			unsigned InstCode = ibuild->GetImmValue(getOp1(I));
 			unsigned InstLoc = ibuild->GetImmValue(getOp2(I));
 			// There really shouldn't be anything live across an

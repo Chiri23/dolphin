@@ -4,8 +4,12 @@
 
 #pragma once
 
-#include "Common.h"
+#include <cstring>
 #include <fstream>
+#include <string>
+
+#include "Common/Common.h"
+#include "Common/FileUtil.h"
 
 // On disk format:
 //header{
@@ -45,7 +49,7 @@ class LinearDiskCache
 {
 public:
 	// return number of read entries
-	u32 OpenAndRead(const char *filename, LinearDiskCacheReader<K, V> &reader)
+	u32 OpenAndRead(const std::string& filename, LinearDiskCacheReader<K, V> &reader)
 	{
 		using std::ios_base;
 
@@ -67,7 +71,7 @@ public:
 			// good header, read some key/value pairs
 			K key;
 
-			V *value = NULL;
+			V *value = nullptr;
 			u32 value_size;
 			u32 entry_number;
 
@@ -147,8 +151,8 @@ private:
 	{
 		char file_header[sizeof(Header)];
 
-		return (Read(file_header, sizeof(Header))
-			&& !memcmp((const char*)&m_header, file_header, sizeof(Header)));
+		return (Read(file_header, sizeof(Header)) &&
+		        !memcmp((const char*)&m_header, file_header, sizeof(Header)));
 	}
 
 	template <typename D>

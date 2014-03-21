@@ -2,7 +2,12 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "WXInputBase.h"
+#include <wx/chartype.h>
+#include <wx/defs.h>
+#include <wx/string.h>
+#include <wx/translation.h>
+
+#include "DolphinWX/WXInputBase.h"
 
 namespace InputCommon
 {

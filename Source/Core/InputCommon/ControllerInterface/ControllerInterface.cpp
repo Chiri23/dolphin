@@ -2,35 +2,34 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "ControllerInterface.h"
+#include "Common/Thread.h"
+#include "InputCommon/ControllerInterface/ControllerInterface.h"
 
 #if USE_EGL
-#include "GLInterface/GLInterface.h"
+#include "DolphinWX/GLInterface/GLInterface.h"
 #endif
 
 #ifdef CIFACE_USE_XINPUT
-	#include "XInput/XInput.h"
+	#include "InputCommon/ControllerInterface/XInput/XInput.h"
 #endif
 #ifdef CIFACE_USE_DINPUT
-	#include "DInput/DInput.h"
+	#include "InputCommon/ControllerInterface/DInput/DInput.h"
 #endif
 #ifdef CIFACE_USE_XLIB
-	#include "Xlib/Xlib.h"
+	#include "InputCommon/ControllerInterface/Xlib/Xlib.h"
 	#ifdef CIFACE_USE_X11_XINPUT2
-		#include "Xlib/XInput2.h"
+		#include "InputCommon/ControllerInterface/Xlib/XInput2.h"
 	#endif
 #endif
 #ifdef CIFACE_USE_OSX
-	#include "OSX/OSX.h"
+	#include "InputCommon/ControllerInterface/OSX/OSX.h"
 #endif
 #ifdef CIFACE_USE_SDL
-	#include "SDL/SDL.h"
+	#include "InputCommon/ControllerInterface/SDL/SDL.h"
 #endif
 #ifdef CIFACE_USE_ANDROID
-	#include "Android/Android.h"
+	#include "InputCommon/ControllerInterface/Android/Android.h"
 #endif
-
-#include "Thread.h"
 
 using namespace ciface::ExpressionParser;
 
@@ -231,7 +230,7 @@ void ControllerInterface::UpdateReference(ControllerInterface::ControlReference*
 	, const DeviceQualifier& default_device) const
 {
 	delete ref->parsed_expression;
-	ref->parsed_expression = NULL;
+	ref->parsed_expression = nullptr;
 
 	ControlFinder finder(*this, default_device, ref->is_input);
 	ref->parse_error = ParseExpression(ref->expression, finder, &ref->parsed_expression);
@@ -245,7 +244,7 @@ void ControllerInterface::UpdateReference(ControllerInterface::ControlReference*
 // which is useful for those crazy flightsticks that have certain buttons that are always held down
 // or some crazy axes or something
 // upon input, return pointer to detected Control
-// else return NULL
+// else return nullptr
 //
 Device::Control* ControllerInterface::InputReference::Detect(const unsigned int ms, Device* const device)
 {
@@ -253,7 +252,7 @@ Device::Control* ControllerInterface::InputReference::Detect(const unsigned int 
 	std::vector<bool> states(device->Inputs().size());
 
 	if (device->Inputs().size() == 0)
-		return NULL;
+		return nullptr;
 
 	// get starting state of all inputs,
 	// so we can ignore those that were activated at time of Detect start
@@ -286,7 +285,7 @@ Device::Control* ControllerInterface::InputReference::Detect(const unsigned int 
 	}
 
 	// no input was detected
-	return NULL;
+	return nullptr;
 }
 
 //
@@ -318,5 +317,5 @@ Device::Control* ControllerInterface::OutputReference::Detect(const unsigned int
 		State(0);
 		device->UpdateOutput();
 	}
-	return NULL;
+	return nullptr;
 }

@@ -4,15 +4,15 @@
 
 #include <cmath>
 
-#include "Common.h"
-#include "IniFile.h"
-#include "VideoConfig.h"
-#include "VideoCommon.h"
-#include "FileUtil.h"
-#include "Core.h"
-#include "Movie.h"
-#include "OnScreenDisplay.h"
-#include "ConfigManager.h"
+#include "Common/Common.h"
+#include "Common/FileUtil.h"
+#include "Common/IniFile.h"
+#include "Core/ConfigManager.h"
+#include "Core/Core.h"
+#include "Core/Movie.h"
+#include "VideoCommon/OnScreenDisplay.h"
+#include "VideoCommon/VideoCommon.h"
+#include "VideoCommon/VideoConfig.h"
 
 VideoConfig g_Config;
 VideoConfig g_ActiveConfig;
@@ -39,7 +39,7 @@ VideoConfig::VideoConfig()
 	backend_info.bSupports3DVision = false;
 }
 
-void VideoConfig::Load(const char *ini_file)
+void VideoConfig::Load(const std::string& ini_file)
 {
 	IniFile iniFile;
 	iniFile.Load(ini_file);
@@ -205,7 +205,6 @@ void VideoConfig::GameIniLoad()
 	CHECK_SETTING("Video", "ProjectionHack", iPhackvalue[0]);
 	CHECK_SETTING("Video", "PH_SZNear", iPhackvalue[1]);
 	CHECK_SETTING("Video", "PH_SZFar", iPhackvalue[2]);
-	CHECK_SETTING("Video", "PH_ExtraParam", iPhackvalue[3]);
 	CHECK_SETTING("Video", "PH_ZNear", sPhackvalue[0]);
 	CHECK_SETTING("Video", "PH_ZFar", sPhackvalue[1]);
 	CHECK_SETTING("Video", "UseBBox", bUseBBox);
@@ -225,7 +224,7 @@ void VideoConfig::VerifyValidity()
 	if (!backend_info.bSupportsPixelLighting) bEnablePixelLighting = false;
 }
 
-void VideoConfig::Save(const char *ini_file)
+void VideoConfig::Save(const std::string& ini_file)
 {
 	IniFile iniFile;
 	iniFile.Load(ini_file);

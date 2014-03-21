@@ -4,13 +4,17 @@
 
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
-#include "Filesystem.h"
+#include "Common/CommonTypes.h"
 
 namespace DiscIO
 {
+
+class IFileSystem;
+class IVolume;
+
 class IBannerLoader
 {
 	public:
@@ -33,4 +37,5 @@ class IBannerLoader
 };
 
 IBannerLoader* CreateBannerLoader(DiscIO::IFileSystem& _rFileSystem, DiscIO::IVolume *pVolume);
-} // namespace
+
+}  // namespace DiscIO

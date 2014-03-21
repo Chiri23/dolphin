@@ -2,12 +2,12 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
+#include <sstream>
+
 #include <Foundation/Foundation.h>
 #include <IOKit/hid/IOHIDLib.h>
 
-#include "OSXJoystick.h"
-
-#include <sstream>
+#include "InputCommon/ControllerInterface/OSX/OSXJoystick.h"
 
 namespace ciface
 {
@@ -39,7 +39,7 @@ Joystick::Joystick(IOHIDDeviceRef device, std::string name, int index)
 		{
 			IOHIDElementRef e =
 			(IOHIDElementRef)CFArrayGetValueAtIndex(buttons, i);
-			//DeviceElementDebugPrint(e, NULL);
+			//DeviceElementDebugPrint(e, nullptr);
 
 			AddInput(new Button(e, m_device));
 		}
@@ -62,7 +62,7 @@ Joystick::Joystick(IOHIDDeviceRef device, std::string name, int index)
 		{
 			IOHIDElementRef e =
 			(IOHIDElementRef)CFArrayGetValueAtIndex(axes, i);
-			//DeviceElementDebugPrint(e, NULL);
+			//DeviceElementDebugPrint(e, nullptr);
 
 			if (IOHIDElementGetUsage(e) == kHIDUsage_GD_Hatswitch) {
 				AddInput(new Hat(e, m_device, Hat::up));

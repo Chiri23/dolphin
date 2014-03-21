@@ -2,20 +2,39 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "BreakpointWindow.h"
-#include "BreakpointView.h"
-#include "CodeWindow.h"
-#include "HW/Memmap.h"
-#include "BreakpointDlg.h"
-#include "MemoryCheckDlg.h"
-#include "PowerPC/PowerPC.h"
-#include "FileUtil.h"
+#include <wx/bitmap.h>
+#include <wx/chartype.h>
+#include <wx/defs.h>
+#include <wx/event.h>
+#include <wx/gdicmn.h>
+#include <wx/image.h>
+#include <wx/listbase.h>
+#include <wx/panel.h>
+#include <wx/string.h>
+#include <wx/windowid.h>
+#include <wx/aui/auibar.h>
+#include <wx/aui/framemanager.h>
+
+#include "Common/BreakPoints.h"
+#include "Common/CommonTypes.h"
+#include "Common/FileUtil.h"
+#include "Common/IniFile.h"
+#include "Core/HW/Memmap.h"
+#include "Core/PowerPC/PowerPC.h"
+#include "DolphinWX/WxUtils.h"
+#include "DolphinWX/Debugger/BreakpointDlg.h"
+#include "DolphinWX/Debugger/BreakpointView.h"
+#include "DolphinWX/Debugger/BreakpointWindow.h"
+#include "DolphinWX/Debugger/CodeWindow.h"
+#include "DolphinWX/Debugger/MemoryCheckDlg.h"
 
 extern "C" {
-#include "../resources/toolbar_add_breakpoint.c"
-#include "../resources/toolbar_add_memorycheck.c"
-#include "../resources/toolbar_debugger_delete.c"
+#include "DolphinWX/resources/toolbar_add_breakpoint.c"
+#include "DolphinWX/resources/toolbar_add_memorycheck.c"
+#include "DolphinWX/resources/toolbar_debugger_delete.c"
 }
+
+class wxWindow;
 
 class CBreakPointBar : public wxAuiToolBar
 {
@@ -93,7 +112,7 @@ CBreakPointWindow::CBreakPointWindow(CCodeWindow* _pCodeWindow, wxWindow* parent
 	m_BreakPointListView = new CBreakPointView(this, wxID_ANY);
 
 	m_mgr.AddPane(new CBreakPointBar(this, wxID_ANY), wxAuiPaneInfo().ToolbarPane().Top().
-			LeftDockable(false).RightDockable(false).BottomDockable(false).Floatable(false));
+	              LeftDockable(false).RightDockable(false).BottomDockable(false).Floatable(false));
 	m_mgr.AddPane(m_BreakPointListView, wxAuiPaneInfo().CenterPane());
 	m_mgr.Update();
 }
@@ -134,8 +153,9 @@ void CBreakPointWindow::OnSelectBP(wxListEvent& event)
 // Clear all breakpoints and memchecks
 void CBreakPointWindow::OnClear(wxCommandEvent& WXUNUSED(event))
 {
-	PowerPC::breakpoints.Clear();
-	PowerPC::memchecks.Clear();
+	PowerPC::debug_interface.ClearAllBreakpoints();
+	PowerPC::debug_interface.ClearAllMemChecks();
+
 	NotifyUpdate();
 }
 
@@ -175,12 +195,19 @@ void CBreakPointWindow::LoadAll(wxCommandEvent& WXUNUSED(event))
 	MemChecks::TMemChecksStr newmcs;
 
 	if (!ini.Load(File::GetUserPath(F_DEBUGGERCONFIG_IDX)))
+	{
 		return;
+	}
 
-	if (ini.GetLines("BreakPoints", newbps, false))
+	if (ini.GetLines("BreakPoints", &newbps, false))
+	{
 		PowerPC::breakpoints.AddFromStrings(newbps);
-	if (ini.GetLines("MemoryChecks", newmcs, false))
+	}
+
+	if (ini.GetLines("MemoryChecks", &newmcs, false))
+	{
 		PowerPC::memchecks.AddFromStrings(newmcs);
+	}
 
 	NotifyUpdate();
 }

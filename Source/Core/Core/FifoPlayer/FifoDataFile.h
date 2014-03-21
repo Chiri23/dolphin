@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include "Common.h"
+#include <string>
 #include <vector>
+
+#include "Common/Common.h"
 
 namespace File
 {
@@ -67,7 +69,7 @@ public:
 	const FifoFrameInfo &GetFrame(size_t frame) const { return m_Frames[frame]; }
 	size_t GetFrameCount() { return m_Frames.size(); }
 
-	bool Save(const char *filename);
+	bool Save(const std::string& filename);
 
 	static FifoDataFile *Load(const std::string &filename, bool flagsOnly);
 

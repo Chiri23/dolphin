@@ -5,14 +5,14 @@
 #pragma once
 
 #include <algorithm>
-#include <vector>
 #include <queue>
+#include <vector>
 
-#include "hci.h"
-#include "WII_IPC_HLE.h"
-#include "WII_IPC_HLE_Device.h"
-#include "WII_IPC_HLE_WiiMote.h"
-#include "../HW/Wiimote.h"
+#include "Core/HW/Wiimote.h"
+#include "Core/IPC_HLE/hci.h"
+#include "Core/IPC_HLE/WII_IPC_HLE.h"
+#include "Core/IPC_HLE/WII_IPC_HLE_Device.h"
+#include "Core/IPC_HLE/WII_IPC_HLE_WiiMote.h"
 
 struct SQueuedEvent
 {
@@ -50,13 +50,13 @@ public:
 
 	virtual ~CWII_IPC_HLE_Device_usb_oh1_57e_305();
 
-	virtual bool Open(u32 _CommandAddress, u32 _Mode);
-	virtual bool Close(u32 _CommandAddress, bool _bForce);
+	virtual bool Open(u32 _CommandAddress, u32 _Mode) override;
+	virtual bool Close(u32 _CommandAddress, bool _bForce) override;
 
-	virtual bool IOCtlV(u32 _CommandAddress);
-	virtual bool IOCtl(u32 _CommandAddress);
+	virtual bool IOCtlV(u32 _CommandAddress) override;
+	virtual bool IOCtl(u32 _CommandAddress) override;
 
-	virtual u32 Update();
+	virtual u32 Update() override;
 
 	// Send ACL data back to bt stack
 	void SendACLPacket(u16 _ConnectionHandle, u8* _pData, u32 _Size);
@@ -69,7 +69,7 @@ public:
 	CWII_IPC_HLE_WiiMote* AccessWiiMote(const bdaddr_t& _rAddr);
 	CWII_IPC_HLE_WiiMote* AccessWiiMote(u16 _ConnectionHandle);
 
-	void DoState(PointerWrap &p);
+	void DoState(PointerWrap &p) override;
 
 	void NetPlay_WiimoteUpdate(int _number);
 

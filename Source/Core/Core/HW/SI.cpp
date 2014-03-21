@@ -2,20 +2,20 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "ChunkFile.h"
-#include "../ConfigManager.h"
-#include "../CoreTiming.h"
-#include "../Movie.h"
-#include "../NetPlayProto.h"
-#include "MMIO.h"
+#include "Common/ChunkFile.h"
+#include "Common/Common.h"
 
-#include "SystemTimers.h"
-#include "ProcessorInterface.h"
-#include "VideoInterface.h"
+#include "Core/ConfigManager.h"
+#include "Core/CoreTiming.h"
+#include "Core/Movie.h"
+#include "Core/NetPlayProto.h"
+#include "Core/HW/MMIO.h"
+#include "Core/HW/ProcessorInterface.h"
+#include "Core/HW/SI.h"
+#include "Core/HW/SI_DeviceGBA.h"
+#include "Core/HW/SystemTimers.h"
+#include "Core/HW/VideoInterface.h"
 
-#include "SI.h"
-#include "SI_DeviceGBA.h"
 
 namespace SerialInterface
 {
@@ -212,7 +212,7 @@ static u8               g_SIBuffer[128];
 
 void DoState(PointerWrap &p)
 {
-	for(int i = 0; i < MAX_SI_CHANNELS; i++)
+	for (int i = 0; i < MAX_SI_CHANNELS; i++)
 	{
 		p.Do(g_Channel[i].m_InHi.Hex);
 		p.Do(g_Channel[i].m_InLo.Hex);
@@ -223,12 +223,12 @@ void DoState(PointerWrap &p)
 		p.Do(type);
 		ISIDevice* pSaveDevice = (type == pDevice->GetDeviceType()) ? pDevice : SIDevice_Create(type, i);
 		pSaveDevice->DoState(p);
-		if(pSaveDevice != pDevice)
+		if (pSaveDevice != pDevice)
 		{
 			// if we had to create a temporary device, discard it if we're not loading.
 			// also, if no movie is active, we'll assume the user wants to keep their current devices
 			// instead of the ones they had when the savestate was created.
-			if(p.GetMode() != PointerWrap::MODE_READ ||
+			if (p.GetMode() != PointerWrap::MODE_READ ||
 				(!Movie::IsRecordingInput() && !Movie::IsPlayingInput()))
 			{
 				delete pSaveDevice;
@@ -355,7 +355,7 @@ void RegisterMMIO(MMIO::Mapping* mmio, u32 base)
 		MMIO::ComplexWrite<u32>([](u32, u32 val) {
 			USIStatusReg tmpStatus(val);
 
-			// clear bits ( if(tmp.bit) SISR.bit=0 )
+			// clear bits ( if (tmp.bit) SISR.bit=0 )
 			if (tmpStatus.NOREP0) g_StatusReg.NOREP0 = 0;
 			if (tmpStatus.COLL0)  g_StatusReg.COLL0 = 0;
 			if (tmpStatus.OVRUN0) g_StatusReg.OVRUN0 = 0;
@@ -422,7 +422,7 @@ void UpdateInterrupts()
 
 void GenerateSIInterrupt(SIInterruptType _SIInterrupt)
 {
-	switch(_SIInterrupt)
+	switch (_SIInterrupt)
 	{
 	case INT_RDSTINT: g_ComCSR.RDSTINT = 1; break;
 	case INT_TCINT:   g_ComCSR.TCINT = 1; break;
@@ -434,7 +434,7 @@ void GenerateSIInterrupt(SIInterruptType _SIInterrupt)
 void RemoveDevice(int _iDeviceNumber)
 {
 	delete g_Channel[_iDeviceNumber].m_pDevice;
-	g_Channel[_iDeviceNumber].m_pDevice = NULL;
+	g_Channel[_iDeviceNumber].m_pDevice = nullptr;
 }
 
 void AddDevice(ISIDevice* pDevice)

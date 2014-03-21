@@ -4,9 +4,20 @@
 
 #pragma once
 
-#include <wx/wx.h>
-#include <wx/notebook.h>
-#include "Debugger.h"
+#include <wx/defs.h>
+#include <wx/event.h>
+#include <wx/gdicmn.h>
+#include <wx/panel.h>
+#include <wx/string.h>
+#include <wx/translation.h>
+#include <wx/windowid.h>
+
+#include "VideoCommon/Debugger.h"
+
+class wxButton;
+class wxChoice;
+class wxTextCtrl;
+class wxWindow;
 
 class GFXDebuggerPanel : public wxPanel, public GFXDebuggerBase
 {
@@ -29,10 +40,10 @@ public:
 	bool bSaveTargets;
 	bool bSaveShaders;
 
-	void OnPause();
+	void OnPause() override;
 
 	// Called from GFX thread once the GFXDebuggerPauseFlag spin lock has finished
-	void OnContinue();
+	void OnContinue() override;
 
 private:
 	DECLARE_EVENT_TABLE();

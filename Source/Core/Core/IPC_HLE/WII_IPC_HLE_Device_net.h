@@ -4,13 +4,14 @@
 
 #pragma once
 
-#include "WII_IPC_HLE_Device.h"
+#include "Common/FileUtil.h"
+#include "Common/Timer.h"
+
+#include "Core/IPC_HLE/WII_IPC_HLE_Device.h"
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #endif
-#include "Timer.h"
-#include "FileUtil.h"
 
 // data layout of the network configuration file (/shared2/sys/net/02/config.dat)
 // needed for /dev/net/ncd/manage
@@ -197,7 +198,7 @@ public:
 		SetEnableBooting(0);
 		SetEmail("@wii.com");
 
-		for(i=0; i<nwc24_config_t::URL_COUNT; i++)
+		for (i=0; i<nwc24_config_t::URL_COUNT; i++)
 		{
 			strncpy(config.http_urls[i], urls[i], nwc24_config_t::MAX_URL_LENGTH);
 		}
@@ -230,7 +231,7 @@ public:
 			else
 			{
 				s32 config_error = CheckNwc24Config();
-				if(config_error)
+				if (config_error)
 					ERROR_LOG(WII_IPC_WC24, "There is an error in the config for for WC24: %d", config_error);
 			}
 		}
@@ -393,9 +394,9 @@ public:
 
 	virtual ~CWII_IPC_HLE_Device_net_kd_request();
 
-	virtual bool Open(u32 _CommandAddress, u32 _Mode);
-	virtual bool Close(u32 _CommandAddress, bool _bForce);
-	virtual bool IOCtl(u32 _CommandAddress);
+	virtual bool Open(u32 _CommandAddress, u32 _Mode) override;
+	virtual bool Close(u32 _CommandAddress, bool _bForce) override;
+	virtual bool IOCtl(u32 _CommandAddress) override;
 
 private:
 	enum
@@ -455,14 +456,14 @@ public:
 	virtual ~CWII_IPC_HLE_Device_net_kd_time()
 	{}
 
-	virtual bool Open(u32 _CommandAddress, u32 _Mode)
+	virtual bool Open(u32 _CommandAddress, u32 _Mode) override
 	{
 		INFO_LOG(WII_IPC_NET, "NET_KD_TIME: Open");
 		Memory::Write_U32(GetDeviceID(), _CommandAddress+4);
 		return true;
 	}
 
-	virtual bool Close(u32 _CommandAddress, bool _bForce)
+	virtual bool Close(u32 _CommandAddress, bool _bForce) override
 	{
 		INFO_LOG(WII_IPC_NET, "NET_KD_TIME: Close");
 		if (!_bForce)
@@ -470,7 +471,7 @@ public:
 		return true;
 	}
 
-	virtual bool IOCtl(u32 _CommandAddress)
+	virtual bool IOCtl(u32 _CommandAddress) override
 	{
 		u32 Parameter = Memory::Read_U32(_CommandAddress + 0x0C);
 		u32 BufferIn  = Memory::Read_U32(_CommandAddress + 0x10);
@@ -595,12 +596,12 @@ public:
 
 	virtual ~CWII_IPC_HLE_Device_net_ip_top();
 
-	virtual bool Open(u32 _CommandAddress, u32 _Mode);
-	virtual bool Close(u32 _CommandAddress, bool _bForce);
-	virtual bool IOCtl(u32 _CommandAddress);
-	virtual bool IOCtlV(u32 _CommandAddress);
+	virtual bool Open(u32 _CommandAddress, u32 _Mode) override;
+	virtual bool Close(u32 _CommandAddress, bool _bForce) override;
+	virtual bool IOCtl(u32 _CommandAddress) override;
+	virtual bool IOCtlV(u32 _CommandAddress) override;
 
-	virtual u32 Update();
+	virtual u32 Update() override;
 
 private:
 #ifdef _WIN32
@@ -619,9 +620,9 @@ public:
 
 	virtual ~CWII_IPC_HLE_Device_net_ncd_manage();
 
-	virtual bool Open(u32 _CommandAddress, u32 _Mode);
-	virtual bool Close(u32 _CommandAddress, bool _bForce);
-	virtual bool IOCtlV(u32 _CommandAddress);
+	virtual bool Open(u32 _CommandAddress, u32 _Mode) override;
+	virtual bool Close(u32 _CommandAddress, bool _bForce) override;
+	virtual bool IOCtlV(u32 _CommandAddress) override;
 
 private:
 	enum
@@ -647,9 +648,9 @@ public:
 
 	virtual ~CWII_IPC_HLE_Device_net_wd_command();
 
-	virtual bool Open(u32 CommandAddress, u32 Mode);
-	virtual bool Close(u32 CommandAddress, bool Force);
-	virtual bool IOCtlV(u32 CommandAddress);
+	virtual bool Open(u32 CommandAddress, u32 Mode) override;
+	virtual bool Close(u32 CommandAddress, bool Force) override;
+	virtual bool IOCtlV(u32 CommandAddress) override;
 
 private:
 	enum

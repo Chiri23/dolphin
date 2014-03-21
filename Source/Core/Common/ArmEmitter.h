@@ -1,4 +1,4 @@
-// Copyright 2013 Dolphin Emulator Project
+// Copyright 2014 Dolphin Emulator Project
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
@@ -6,12 +6,14 @@
 
 #pragma once
 
-#include "Common.h"
-#include "MemoryUtil.h"
+#include <vector>
+
+#include "Common/Common.h"
+#include "Common/MemoryUtil.h"
+
 #if defined(__SYMBIAN32__) || defined(PANDORA)
 #include <signal.h>
 #endif
-#include <vector>
 
 #undef _IP
 #undef R0
@@ -159,7 +161,7 @@ public:
 
 	Operand2(ARMReg base, ShiftType type, u8 shift)// For IMM shifted register
 	{
-		if(shift == 32) shift = 0;
+		if (shift == 32) shift = 0;
 		switch (type)
 		{
 		case ST_LSL:
@@ -196,7 +198,7 @@ public:
 	}
 	u32 GetData()
 	{
-		switch(Type)
+		switch (Type)
 		{
 		case TYPE_IMM:
 			return Imm12Mod(); // This'll need to be changed later
@@ -708,7 +710,7 @@ protected:
 	size_t region_size;
 
 public:
-	ARMXCodeBlock() : region(NULL), region_size(0) {}
+	ARMXCodeBlock() : region(nullptr), region_size(0) {}
 	virtual ~ARMXCodeBlock() { if (region) FreeCodeSpace(); }
 
 	// Call this before you generate any code.
@@ -733,8 +735,8 @@ public:
 	{
 #ifndef __SYMBIAN32__
 		FreeMemoryPages(region, region_size);
+		region = nullptr;
 #endif
-		region = NULL;
 		region_size = 0;
 	}
 

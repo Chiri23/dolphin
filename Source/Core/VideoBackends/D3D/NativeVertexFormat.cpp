@@ -2,11 +2,11 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "D3DBase.h"
-#include "D3DBlob.h"
-#include "NativeVertexFormat.h"
-#include "VertexManager.h"
-#include "VertexShaderCache.h"
+#include "VideoBackends/D3D/D3DBase.h"
+#include "VideoBackends/D3D/D3DBlob.h"
+#include "VideoBackends/D3D/VertexManager.h"
+#include "VideoBackends/D3D/VertexShaderCache.h"
+#include "VideoCommon/NativeVertexFormat.h"
 
 namespace DX11
 {
@@ -20,7 +20,7 @@ class D3DVertexFormat : public NativeVertexFormat
 	ID3D11InputLayout* m_layout;
 
 public:
-	D3DVertexFormat() : m_num_elems(0), m_vs_bytecode(NULL), m_layout(NULL) {}
+	D3DVertexFormat() : m_num_elems(0), m_vs_bytecode(nullptr), m_layout(nullptr) {}
 	~D3DVertexFormat() { SAFE_RELEASE(m_vs_bytecode); SAFE_RELEASE(m_layout); }
 
 	void Initialize(const PortableVertexDeclaration &_vtx_decl);

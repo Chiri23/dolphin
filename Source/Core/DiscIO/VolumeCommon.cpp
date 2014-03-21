@@ -2,7 +2,11 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Volume.h"
+#include <string>
+#include <vector>
+
+#include "Common/Common.h"
+#include "DiscIO/Volume.h"
 
 namespace DiscIO
 {
@@ -77,7 +81,7 @@ IVolume::ECountry CountrySwitch(u8 CountryCode)
 
 u8 GetSysMenuRegion(u16 _TitleVersion)
 {
-	switch(_TitleVersion)
+	switch (_TitleVersion)
 	{
 	case 128: case 192: case 224: case 256:
 	case 288: case 352: case 384: case 416:

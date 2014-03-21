@@ -5,13 +5,15 @@
 #pragma once
 
 #include <wx/listctrl.h>
-#include "Common.h"
+#include <wx/windowid.h>
+
+class wxWindow;
 
 class CBreakPointView : public wxListCtrl
 {
 public:
 	CBreakPointView(wxWindow* parent, const wxWindowID id);
 
-	void Update();
+	void Update() override;
 	void DeleteCurrentSelection();
 };

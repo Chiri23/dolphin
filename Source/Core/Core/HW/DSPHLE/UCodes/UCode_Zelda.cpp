@@ -6,15 +6,14 @@
 // Zelda: The Windwaker, Mario Sunshine, Mario Kart, Twilight Princess,
 // Super Mario Galaxy
 
-#include "UCodes.h"
-#include "UCode_Zelda.h"
-#include "../MailHandler.h"
+#include "AudioCommon/Mixer.h"
+#include "AudioCommon/WaveFile.h"
 
-#include "Mixer.h"
-
-#include "WaveFile.h"
-#include "../../DSP.h"
-#include "ConfigManager.h"
+#include "Core/ConfigManager.h"
+#include "Core/HW/DSP.h"
+#include "Core/HW/DSPHLE/MailHandler.h"
+#include "Core/HW/DSPHLE/UCodes/UCode_Zelda.h"
+#include "Core/HW/DSPHLE/UCodes/UCodes.h"
 
 
 CUCode_Zelda::CUCode_Zelda(DSPHLE *dsp_hle, u32 _CRC)
@@ -59,7 +58,7 @@ CUCode_Zelda::CUCode_Zelda(DSPHLE *dsp_hle, u32 _CRC)
 
 	if (IsLightVersion())
 	{
-		NOTICE_LOG(DSPHLE, "Luigi Stylee!");
+		DEBUG_LOG(DSPHLE, "Luigi Stylee!");
 		m_rMailHandler.PushMail(0x88881111);
 	}
 	else
@@ -93,9 +92,9 @@ CUCode_Zelda::~CUCode_Zelda()
 u8 *CUCode_Zelda::GetARAMPointer(u32 address)
 {
 	if (IsDMAVersion())
-		return (u8 *)(Memory::GetPointer(m_DMABaseAddr)) + address;
+		return Memory::GetPointer(m_DMABaseAddr) + address;
 	else
-		return (u8 *)(DSP::GetARAMPtr()) + address;
+		return DSP::GetARAMPtr() + address;
 }
 
 void CUCode_Zelda::Update(int cycles)

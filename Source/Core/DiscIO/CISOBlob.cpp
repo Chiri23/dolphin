@@ -3,10 +3,11 @@
 // Refer to the license.txt file included.
 
 #include <algorithm>
-#include <cmath>
+#include <cstdio>
 
-#include "Blob.h"
-#include "CISOBlob.h"
+#include "Common/CommonTypes.h"
+#include "Common/FileUtil.h"
+#include "DiscIO/CISOBlob.h"
 
 namespace DiscIO
 {
@@ -28,7 +29,7 @@ CISOFileReader::CISOFileReader(std::FILE* file)
 		m_ciso_map[idx] = (1 == header.map[idx]) ? count++ : UNUSED_BLOCK_ID;
 }
 
-CISOFileReader* CISOFileReader::Create(const char* filename)
+CISOFileReader* CISOFileReader::Create(const std::string& filename)
 {
 	if (IsCISOBlob(filename))
 	{
@@ -36,7 +37,9 @@ CISOFileReader* CISOFileReader::Create(const char* filename)
 		return new CISOFileReader(f.ReleaseHandle());
 	}
 	else
-		return NULL;
+	{
+		return nullptr;
+	}
 }
 
 u64 CISOFileReader::GetDataSize() const
@@ -78,7 +81,7 @@ bool CISOFileReader::Read(u64 offset, u64 nbytes, u8* out_ptr)
 	return true;
 }
 
-bool IsCISOBlob(const char* filename)
+bool IsCISOBlob(const std::string& filename)
 {
 	File::IOFile f(filename, "rb");
 

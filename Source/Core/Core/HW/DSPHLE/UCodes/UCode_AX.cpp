@@ -2,14 +2,15 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "UCode_AX.h"
-#include "../../DSP.h"
-#include "FileUtil.h"
-#include "ConfigManager.h"
-#include "MathUtil.h"
+#include "Common/FileUtil.h"
+#include "Common/MathUtil.h"
+
+#include "Core/ConfigManager.h"
+#include "Core/HW/DSP.h"
+#include "Core/HW/DSPHLE/UCodes/UCode_AX.h"
 
 #define AX_GC
-#include "UCode_AX_Voice.h"
+#include "Core/HW/DSPHLE/UCodes/UCode_AX_Voice.h"
 
 CUCode_AX::CUCode_AX(DSPHLE* dsp_hle, u32 crc)
 	: IUCode(dsp_hle, crc)
@@ -207,7 +208,7 @@ void CUCode_AX::HandleCommandList()
 			case CMD_MIX_AUXB_NOWRITE:
 				addr_hi = m_cmdlist[curr_idx++];
 				addr_lo = m_cmdlist[curr_idx++];
-				MixAUXSamples(false, 0, HILO_TO_32(addr));
+				MixAUXSamples(1, 0, HILO_TO_32(addr));
 				break;
 
 			case CMD_COMPRESSOR_TABLE_ADDR: curr_idx += 2; break;
@@ -467,7 +468,7 @@ void CUCode_AX::ProcessPBList(u32 pb_addr)
 			ApplyUpdatesForMs(curr_ms, (u16*)&pb, pb.updates.num_updates, updates);
 
 			ProcessVoice(pb, buffers, spms, ConvertMixerControl(pb.mixer_control),
-			             m_coeffs_available ? m_coeffs : NULL);
+			             m_coeffs_available ? m_coeffs : nullptr);
 
 			// Forward the buffers
 			for (u32 i = 0; i < sizeof (buffers.ptrs) / sizeof (buffers.ptrs[0]); ++i)
@@ -481,7 +482,7 @@ void CUCode_AX::ProcessPBList(u32 pb_addr)
 
 void CUCode_AX::MixAUXSamples(int aux_id, u32 write_addr, u32 read_addr)
 {
-	int* buffers[3] = { 0 };
+	int* buffers[3] = { nullptr };
 
 	switch (aux_id)
 	{
@@ -668,7 +669,6 @@ void CUCode_AX::HandleMail(u32 mail)
 	{
 		CopyCmdList(mail, cmdlist_size);
 		StartWorking();
-		NotifyAXThread();
 	}
 	else if (m_UploadSetupInProgress)
 	{

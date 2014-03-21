@@ -2,15 +2,16 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "FileUtil.h"
-#include "StringUtil.h"
-#include "ChunkFile.h"
-
-#include "WII_IPC_HLE_Device_fs.h"
-#include "WII_IPC_HLE_Device_FileIO.h"
-#include "NandPaths.h"
 #include <algorithm>
+
+#include "Common/ChunkFile.h"
+#include "Common/Common.h"
+#include "Common/FileUtil.h"
+#include "Common/NandPaths.h"
+#include "Common/StringUtil.h"
+
+#include "Core/IPC_HLE/WII_IPC_HLE_Device_FileIO.h"
+#include "Core/IPC_HLE/WII_IPC_HLE_Device_fs.h"
 
 
 static Common::replace_v replacements;
@@ -161,7 +162,7 @@ bool CWII_IPC_HLE_Device_FileIO::Seek(u32 _CommandAddress)
 
 		switch (Mode)
 		{
-			case 0:
+			case WII_SEEK_SET:
 			{
 				if ((SeekPosition >=0) && (SeekPosition <= fileSize))
 				{
@@ -170,7 +171,8 @@ bool CWII_IPC_HLE_Device_FileIO::Seek(u32 _CommandAddress)
 				}
 				break;
 			}
-			case 1:
+
+			case WII_SEEK_CUR:
 			{
 				s32 wantedPos = SeekPosition+m_SeekPos;
 				if (wantedPos >=0 && wantedPos <= fileSize)
@@ -180,9 +182,10 @@ bool CWII_IPC_HLE_Device_FileIO::Seek(u32 _CommandAddress)
 				}
 				break;
 			}
-			case 2:
+
+			case WII_SEEK_END:
 			{
-				s32 wantedPos = fileSize+m_SeekPos;
+				s32 wantedPos = SeekPosition+fileSize;
 				if (wantedPos >=0 && wantedPos <= fileSize)
 				{
 					m_SeekPos = wantedPos;
@@ -190,6 +193,7 @@ bool CWII_IPC_HLE_Device_FileIO::Seek(u32 _CommandAddress)
 				}
 				break;
 			}
+
 			default:
 			{
 				PanicAlert("CWII_IPC_HLE_Device_FileIO Unsupported seek mode %i", Mode);

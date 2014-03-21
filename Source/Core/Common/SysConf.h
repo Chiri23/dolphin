@@ -4,8 +4,12 @@
 
 #pragma once
 
+#include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
+
+#include "Common/Common.h"
 
 // This class is meant to edit the values in a given Wii SYSCONF file
 // It currently does not add/remove/rearrange sections,
@@ -159,8 +163,8 @@ public:
 	}
 
 	bool Save();
-	bool SaveToFile(const char* filename);
-	bool LoadFromFile(const char* filename);
+	bool SaveToFile(const std::string& filename);
+	bool LoadFromFile(const std::string& filename);
 	bool Reload();
 	// This function is used when the NAND root is changed
 	void UpdateLocation();

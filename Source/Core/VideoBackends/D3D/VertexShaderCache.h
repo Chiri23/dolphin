@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "VertexShaderGen.h"
-
-#include "D3DBase.h"
-#include "D3DBlob.h"
-
 #include <map>
+
+#include "VideoBackends/D3D/D3DBase.h"
+#include "VideoBackends/D3D/D3DBlob.h"
+
+#include "VideoCommon/VertexShaderGen.h"
 
 namespace DX11 {
 
@@ -40,7 +40,7 @@ private:
 
 		std::string code;
 
-		VSCacheEntry() : shader(NULL), bytecode(NULL) {}
+		VSCacheEntry() : shader(nullptr), bytecode(nullptr) {}
 		void SetByteCode(D3DBlob* blob)
 		{
 			SAFE_RELEASE(bytecode);

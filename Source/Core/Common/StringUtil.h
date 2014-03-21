@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include <stdarg.h>
-
-#include <vector>
-#include <string>
-#include <sstream>
+#include <cstdarg>
+#include <cstddef>
 #include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
 
-#include "Common.h"
+#include "Common/Common.h"
 
 std::string StringFromFormat(const char* format, ...)
 #if !defined _WIN32
@@ -76,7 +76,7 @@ static bool TryParse(const std::string &str, N *const output)
 }
 
 // TODO: kill this
-bool AsciiToHex(const char* _szValue, u32& result);
+bool AsciiToHex(const std::string& _szValue, u32& result);
 
 std::string TabsToSpaces(int tab_size, const std::string &in);
 

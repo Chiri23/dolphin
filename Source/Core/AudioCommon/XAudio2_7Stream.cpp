@@ -7,8 +7,8 @@
 // instead of other possible places. This may be accomplished by adding the path to
 // the AdditionalIncludeDirectories for this file via msbuild.
 
-#include "AudioCommon.h"
-#include "XAudio2_7Stream.h"
+#include "AudioCommon/AudioCommon.h"
+#include "AudioCommon/XAudio2_7Stream.h"
 
 #ifdef HAVE_DXSDK
 #include <dxsdkver.h>
@@ -159,7 +159,7 @@ XAudio2_7::XAudio2_7(CMixer *mixer)
 	: SoundStream(mixer)
 	, m_mastering_voice(nullptr)
 	, m_volume(1.0f)
-	, m_cleanup_com(SUCCEEDED(CoInitializeEx(NULL, COINIT_MULTITHREADED)))
+	, m_cleanup_com(SUCCEEDED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
 {
 }
 
@@ -260,8 +260,6 @@ void XAudio2_7::Stop()
 	}
 }
 
-bool XAudio2_7::usesMixer() const { return true; }
-
 #else
 
 struct StreamingVoiceContext2_7 {};
@@ -283,7 +281,6 @@ void XAudio2_7::Stop() {}
 void XAudio2_7::Update() {}
 void XAudio2_7::Clear(bool mute) {}
 void XAudio2_7::SetVolume(int volume) {}
-bool XAudio2_7::usesMixer() const { return false; }
 bool XAudio2_7::InitLibrary() { return false; }
 
 #endif

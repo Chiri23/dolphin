@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include "Common.h"
+#include <cstddef>
+#include <wx/event.h>
 
 enum
 {
@@ -151,7 +152,6 @@ enum
 	// Float popup menu IDs
 	IDM_FLOAT_LOGWINDOW,
 	IDM_FLOAT_LOGCONFIGWINDOW,
-	IDM_FLOAT_CONSOLEWINDOW,
 	IDM_FLOAT_REGISTERWINDOW,
 	IDM_FLOAT_BREAKPOINTWINDOW,
 	IDM_FLOAT_MEMORYWINDOW,
@@ -251,29 +251,12 @@ enum
 	LIST_CTRL = 1000
 };
 
-#include <wx/wx.h>
-#include <wx/toolbar.h>
-#include <wx/log.h>
-#include <wx/image.h>
-#include <wx/aboutdlg.h>
-#include <wx/filedlg.h>
-#include <wx/spinctrl.h>
-#include <wx/srchctrl.h>
-#include <wx/listctrl.h>
-#include <wx/progdlg.h>
-#include <wx/imagpng.h>
-#include <wx/button.h>
-#include <wx/stattext.h>
-#include <wx/choice.h>
-#include <wx/cmdline.h>
-#include <wx/busyinfo.h>
-
 // custom message macro
 #define EVT_HOST_COMMAND(id, fn) \
 	DECLARE_EVENT_TABLE_ENTRY(\
 			wxEVT_HOST_COMMAND, id, wxID_ANY, \
 			(wxObjectEventFunction)(wxEventFunction) wxStaticCastEvent(wxCommandEventFunction, &fn), \
-			(wxObject*) NULL \
+			(wxObject*) nullptr \
 			),
 
 extern const wxEventType wxEVT_HOST_COMMAND;

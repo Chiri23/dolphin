@@ -1,19 +1,20 @@
 
-#include "MainBase.h"
-#include "VideoState.h"
-#include "VideoConfig.h"
-#include "RenderBase.h"
-#include "FramebufferManagerBase.h"
-#include "TextureCacheBase.h"
-#include "VertexLoaderManager.h"
-#include "CommandProcessor.h"
-#include "PixelEngine.h"
-#include "Atomic.h"
-#include "Fifo.h"
-#include "BPStructs.h"
-#include "OnScreenDisplay.h"
-#include "VideoBackendBase.h"
-#include "ConfigManager.h"
+#include "Common/Atomic.h"
+#include "Core/ConfigManager.h"
+
+#include "VideoCommon/BPStructs.h"
+#include "VideoCommon/CommandProcessor.h"
+#include "VideoCommon/Fifo.h"
+#include "VideoCommon/FramebufferManagerBase.h"
+#include "VideoCommon/MainBase.h"
+#include "VideoCommon/OnScreenDisplay.h"
+#include "VideoCommon/PixelEngine.h"
+#include "VideoCommon/RenderBase.h"
+#include "VideoCommon/TextureCacheBase.h"
+#include "VideoCommon/VertexLoaderManager.h"
+#include "VideoCommon/VideoBackendBase.h"
+#include "VideoCommon/VideoConfig.h"
+#include "VideoCommon/VideoState.h"
 
 bool s_BackendInitialized = false;
 
@@ -67,7 +68,7 @@ void VideoBackendHardware::Video_SetRendering(bool bEnabled)
 // Run from the graphics thread (from Fifo.cpp)
 void VideoFifo_CheckSwapRequest()
 {
-	if(g_ActiveConfig.bUseXFB)
+	if (g_ActiveConfig.bUseXFB)
 	{
 		if (Common::AtomicLoadAcquire(s_swapRequested))
 		{
@@ -83,7 +84,7 @@ void VideoFifo_CheckSwapRequestAt(u32 xfbAddr, u32 fbWidth, u32 fbHeight)
 {
 	if (g_ActiveConfig.bUseXFB)
 	{
-		if(Common::AtomicLoadAcquire(s_swapRequested))
+		if (Common::AtomicLoadAcquire(s_swapRequested))
 		{
 			u32 aLower = xfbAddr;
 			u32 aUpper = xfbAddr + 2 * fbWidth * fbHeight;
@@ -118,9 +119,9 @@ void VideoBackendHardware::Video_EndField()
 	}
 }
 
-void VideoBackendHardware::Video_AddMessage(const char* pstr, u32 milliseconds)
+void VideoBackendHardware::Video_AddMessage(const std::string& msg, u32 milliseconds)
 {
-	OSD::AddMessage(pstr, milliseconds);
+	OSD::AddMessage(msg, milliseconds);
 }
 
 void VideoBackendHardware::Video_ClearMessages()
@@ -129,9 +130,9 @@ void VideoBackendHardware::Video_ClearMessages()
 }
 
 // Screenshot
-bool VideoBackendHardware::Video_Screenshot(const char *_szFilename)
+bool VideoBackendHardware::Video_Screenshot(const std::string& filename)
 {
-	Renderer::SetScreenshot(_szFilename);
+	Renderer::SetScreenshot(filename.c_str());
 	return true;
 }
 
@@ -193,7 +194,7 @@ void VideoFifo_CheckPerfQueryRequest()
 
 u32 VideoBackendHardware::Video_GetQueryResult(PerfQueryType type)
 {
-	if(!g_perf_query->ShouldEmulate())
+	if (!g_perf_query->ShouldEmulate())
 	{
 		return 0;
 	}

@@ -3,7 +3,11 @@
 // a simple lockless thread-safe,
 // single reader, single writer queue
 
-#include "Atomic.h"
+#include <algorithm>
+#include <cstddef>
+
+#include "Common/Atomic.h"
+#include "Common/CommonTypes.h"
 
 namespace Common
 {
@@ -61,8 +65,8 @@ public:
 		ElementPtr *tmpptr = m_read_ptr;
 		// advance the read pointer
 		m_read_ptr = AtomicLoad(tmpptr->next);
-		// set the next element to NULL to stop the recursive deletion
-		tmpptr->next = NULL;
+		// set the next element to nullptr to stop the recursive deletion
+		tmpptr->next = nullptr;
 		delete tmpptr; // this also deletes the element
 	}
 
@@ -77,7 +81,7 @@ public:
 		ElementPtr *tmpptr = m_read_ptr;
 		m_read_ptr = AtomicLoadAcquire(tmpptr->next);
 		t = std::move(tmpptr->current);
-		tmpptr->next = NULL;
+		tmpptr->next = nullptr;
 		delete tmpptr;
 		return true;
 	}
@@ -96,7 +100,7 @@ private:
 	class ElementPtr
 	{
 	public:
-		ElementPtr() : next(NULL) {}
+		ElementPtr() : next(nullptr) {}
 
 		~ElementPtr()
 		{

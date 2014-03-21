@@ -11,11 +11,11 @@
 
 #pragma once
 
-#include "Common.h"
-#include "VideoCommon.h"
-
-#include <vector>
 #include <string>
+#include <vector>
+
+#include "Common/Common.h"
+#include "VideoCommon/VideoCommon.h"
 
 // Log in two categories, and save three other options in the same byte
 #define CONF_LOG          1
@@ -47,13 +47,13 @@ enum EFBScale
 class IniFile;
 
 // NEVER inherit from this class.
-struct VideoConfig
+struct VideoConfig final
 {
 	VideoConfig();
-	void Load(const char *ini_file);
+	void Load(const std::string& ini_file);
 	void GameIniLoad();
 	void VerifyValidity();
-	void Save(const char *ini_file);
+	void Save(const std::string& ini_file);
 	void UpdateProjectionHack();
 	bool IsVSync();
 
@@ -114,7 +114,7 @@ struct VideoConfig
 	bool bCopyEFBToTexture;
 	bool bCopyEFBScaled;
 	int iSafeTextureCache_ColorSamples;
-	int iPhackvalue[4];
+	int iPhackvalue[3];
 	std::string sPhackvalue[2];
 	float fAspectRatioHackW, fAspectRatioHackH;
 	bool bUseBBox;

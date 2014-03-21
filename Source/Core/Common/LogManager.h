@@ -4,13 +4,12 @@
 
 #pragma once
 
-#include "Log.h"
-#include "StringUtil.h"
-#include "Thread.h"
-#include "FileUtil.h"
-
+#include <cstdarg>
+#include <fstream>
 #include <set>
-#include <string.h>
+
+#include "Common/Common.h"
+#include "Common/StdMutex.h"
 
 #define MAX_MESSAGES 8000
 #define MAX_MSGLEN  1024
@@ -30,7 +29,7 @@ class FileLogListener : public LogListener
 public:
 	FileLogListener(const char *filename);
 
-	void Log(LogTypes::LOG_LEVELS, const char *msg);
+	void Log(LogTypes::LOG_LEVELS, const char *msg) override;
 
 	bool IsValid() { return !m_logfile.fail(); }
 	bool IsEnabled() const { return m_enable; }
@@ -42,6 +41,12 @@ private:
 	std::mutex m_log_lock;
 	std::ofstream m_logfile;
 	bool m_enable;
+};
+
+class DebuggerLogListener : public LogListener
+{
+public:
+	void Log(LogTypes::LOG_LEVELS, const char *msg) override;
 };
 
 class LogContainer
@@ -75,11 +80,15 @@ private:
 	std::set<LogListener*> m_listeners;
 };
 
+class ConsoleListener;
+
 class LogManager : NonCopyable
 {
 private:
 	LogContainer* m_Log[LogTypes::NUMBER_OF_LOGS];
 	FileLogListener *m_fileLog;
+	ConsoleListener *m_consoleLog;
+	DebuggerLogListener *m_debuggerLog;
 	static LogManager *m_logManager;  // Singleton. Ugh.
 
 	LogManager();
@@ -129,6 +138,16 @@ public:
 	FileLogListener *GetFileListener() const
 	{
 		return m_fileLog;
+	}
+
+	ConsoleListener *GetConsoleListener() const
+	{
+		return m_consoleLog;
+	}
+
+	DebuggerLogListener *GetDebuggerListener() const
+	{
+		return m_debuggerLog;
 	}
 
 	static LogManager* GetInstance()

@@ -7,11 +7,12 @@
 
 #pragma once
 
-#include <string>
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
 
-#include "Common.h"
+#include "Common/Common.h"
 
 struct SCall
 {
@@ -78,22 +79,23 @@ protected:
 public:
 	SymbolDB() {}
 	virtual ~SymbolDB() {}
-	virtual Symbol *GetSymbolFromAddr(u32 addr) { return 0; }
-	virtual Symbol *AddFunction(u32 startAddr) { return 0;}
+	virtual Symbol *GetSymbolFromAddr(u32 addr) { return nullptr; }
+	virtual Symbol *AddFunction(u32 startAddr) { return nullptr; }
 
 	void AddCompleteSymbol(const Symbol &symbol);
 
-	Symbol *GetSymbolFromName(const char *name);
-	Symbol *GetSymbolFromHash(u32 hash) {
+	Symbol* GetSymbolFromName(const std::string& name);
+	Symbol* GetSymbolFromHash(u32 hash)
+	{
 		XFuncPtrMap::iterator iter = checksumToFunction.find(hash);
 		if (iter != checksumToFunction.end())
 			return iter->second;
 		else
-			return 0;
+			return nullptr;
 	}
 
-	const XFuncMap &Symbols() const {return functions;}
-	XFuncMap &AccessSymbols() {return functions;}
+	const XFuncMap &Symbols() const { return functions; }
+	XFuncMap &AccessSymbols() { return functions; }
 
 	void Clear(const char *prefix = "");
 	void List();

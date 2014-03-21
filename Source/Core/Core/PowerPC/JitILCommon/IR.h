@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "x64Emitter.h"
 #include <vector>
+
+#include "Common/x64Emitter.h"
 
 namespace IREmitter {
 enum Opcode {
@@ -45,7 +46,7 @@ enum Opcode {
 	StoreGQR,
 	StoreSRR,
 	// Arbitrary interpreter instruction
-	InterpreterFallback,
+	FallBackToInterpreter,
 
 	// Binary operators
 	// Commutative integer operators
@@ -226,7 +227,7 @@ private:
 	InstLoc FoldICmpCRUnsigned(InstLoc Op1, InstLoc Op2);
 	InstLoc FoldDoubleBiOp(unsigned Opcode, InstLoc Op1, InstLoc Op2);
 
-	InstLoc FoldInterpreterFallback(InstLoc Op1, InstLoc Op2);
+	InstLoc FoldFallBackToInterpreter(InstLoc Op1, InstLoc Op2);
 
 	InstLoc FoldZeroOp(unsigned Opcode, unsigned extra);
 	InstLoc FoldUOp(unsigned OpCode, InstLoc Op1,
@@ -373,8 +374,8 @@ public:
 	InstLoc EmitICmpCRUnsigned(InstLoc op1, InstLoc op2) {
 		return FoldBiOp(ICmpCRUnsigned, op1, op2);
 	}
-	InstLoc EmitInterpreterFallback(InstLoc op1, InstLoc op2) {
-		return FoldBiOp(InterpreterFallback, op1, op2);
+	InstLoc EmitFallBackToInterpreter(InstLoc op1, InstLoc op2) {
+		return FoldBiOp(FallBackToInterpreter, op1, op2);
 	}
 	InstLoc EmitInterpreterBranch() {
 		return FoldZeroOp(InterpreterBranch, 0);
@@ -546,26 +547,26 @@ public:
 		MarkUsed.clear();
 		MarkUsed.reserve(100000);
 		for (unsigned i = 0; i < 32; i++) {
-			GRegCache[i] = 0;
-			GRegCacheStore[i] = 0;
-			FRegCache[i] = 0;
-			FRegCacheStore[i] = 0;
+			GRegCache[i] = nullptr;
+			GRegCacheStore[i] = nullptr;
+			FRegCache[i] = nullptr;
+			FRegCacheStore[i] = nullptr;
 		}
-		CarryCache = 0;
-		CarryCacheStore = 0;
+		CarryCache = nullptr;
+		CarryCacheStore = nullptr;
 		for (unsigned i = 0; i < 8; i++) {
-			CRCache[i] = 0;
-			CRCacheStore[i] = 0;
+			CRCache[i] = nullptr;
+			CRCacheStore[i] = nullptr;
 		}
-		CTRCache = 0;
-		CTRCacheStore = 0;
+		CTRCache = nullptr;
+		CTRCacheStore = nullptr;
 	}
 
 	IRBuilder() { Reset(); }
 
 private:
 	IRBuilder(IRBuilder&); // DO NOT IMPLEMENT
-	unsigned isSameValue(InstLoc Op1, InstLoc Op2) const;
+	bool isSameValue(InstLoc Op1, InstLoc Op2) const;
 	unsigned getComplexity(InstLoc I) const;
 	unsigned getNumberOfOperands(InstLoc I) const;
 	void simplifyCommutative(unsigned Opcode, InstLoc& Op1, InstLoc& Op2);

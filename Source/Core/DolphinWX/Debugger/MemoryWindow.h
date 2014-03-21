@@ -4,17 +4,23 @@
 
 #pragma once
 
-#include <wx/dialog.h>
-#include <wx/textctrl.h>
-#include <wx/listbox.h>
-#include "MemoryView.h"
-#include "Thread.h"
-#include "StringUtil.h"
+#include <wx/defs.h>
+#include <wx/event.h>
+#include <wx/gdicmn.h>
+#include <wx/panel.h>
+#include <wx/string.h>
+#include <wx/translation.h>
+#include <wx/windowid.h>
 
-#include "CoreParameter.h"
+#include "Common/CommonTypes.h"
 
-class CRegisterWindow;
-class CBreakPointWindow;
+class CMemoryView;
+class IniFile;
+class wxButton;
+class wxCheckBox;
+class wxListBox;
+class wxTextCtrl;
+class wxWindow;
 
 class CMemoryWindow
 	: public wxPanel
@@ -37,7 +43,7 @@ class CMemoryWindow
 		void Save(IniFile& _IniFile) const;
 		void Load(IniFile& _IniFile);
 
-		void Update();
+		void Update() override;
 		void NotifyMapLoaded();
 
 		void JumpToAddress(u32 _Address);

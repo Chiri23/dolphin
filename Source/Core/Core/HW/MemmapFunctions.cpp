@@ -15,18 +15,19 @@
 // Official Git repository and contact information can be found at
 // http://code.google.com/p/dolphin-emu/
 
-#include "Common.h"
-#include "Atomic.h"
+#include "Common/Atomic.h"
+#include "Common/Common.h"
 
-#include "GPFifo.h"
-#include "Memmap.h"
-#include "../Core.h"
-#include "../PowerPC/PowerPC.h"
-#include "VideoBackendBase.h"
-#include "MMIO.h"
+#include "Core/Core.h"
+#include "Core/HW/GPFifo.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/MMIO.h"
+#include "Core/PowerPC/PowerPC.h"
+
+#include "VideoCommon/VideoBackendBase.h"
 
 #ifdef USE_GDBSTUB
-#include "../PowerPC/GDBStub.h"
+#include "Core/PowerPC/GDBStub.h"
 #endif
 
 namespace Memory
@@ -146,7 +147,7 @@ inline void WriteToHardware(u32 em_address, const T data, u32 effective_address,
 {
 	// First, let's check for FIFO writes, since they are probably the most common
 	// reason we end up in this function:
-	if (em_address == 0xCC008000)
+	if ((em_address & 0xFFFFF000) == 0xCC008000)
 	{
 		switch (sizeof(T))
 		{
@@ -628,14 +629,14 @@ u32 LookupTLBPageAddress(const XCheckTLBFlag _Flag, const u32 vpa, u32 *paddr)
 {
 #ifdef FAST_TLB_CACHE
 	tlb_entry *tlbe = tlb[_Flag == FLAG_OPCODE][(vpa>>HW_PAGE_INDEX_SHIFT)&HW_PAGE_INDEX_MASK];
-	if(tlbe[0].tag == (vpa & ~0xfff) && !(tlbe[0].flags & TLB_FLAG_INVALID))
+	if (tlbe[0].tag == (vpa & ~0xfff) && !(tlbe[0].flags & TLB_FLAG_INVALID))
 	{
 		tlbe[0].flags |= TLB_FLAG_MOST_RECENT;
 		tlbe[1].flags &= ~TLB_FLAG_MOST_RECENT;
 		*paddr = tlbe[0].paddr | (vpa & 0xfff);
 		return 1;
 	}
-	if(tlbe[1].tag == (vpa & ~0xfff) && !(tlbe[1].flags & TLB_FLAG_INVALID))
+	if (tlbe[1].tag == (vpa & ~0xfff) && !(tlbe[1].flags & TLB_FLAG_INVALID))
 	{
 		tlbe[1].flags |= TLB_FLAG_MOST_RECENT;
 		tlbe[0].flags &= ~TLB_FLAG_MOST_RECENT;
@@ -677,7 +678,7 @@ void UpdateTLBEntry(const XCheckTLBFlag _Flag, UPTE2 PTE2, const u32 vpa)
 {
 #ifdef FAST_TLB_CACHE
 	tlb_entry *tlbe = tlb[_Flag == FLAG_OPCODE][(vpa>>HW_PAGE_INDEX_SHIFT)&HW_PAGE_INDEX_MASK];
-	if((tlbe[0].flags & TLB_FLAG_MOST_RECENT) == 0)
+	if ((tlbe[0].flags & TLB_FLAG_MOST_RECENT) == 0)
 	{
 		tlbe[0].flags = TLB_FLAG_MOST_RECENT;
 		tlbe[1].flags &= ~TLB_FLAG_MOST_RECENT;
@@ -715,20 +716,20 @@ void InvalidateTLBEntry(u32 vpa)
 {
 #ifdef FAST_TLB_CACHE
 	tlb_entry *tlbe = tlb[0][(vpa>>HW_PAGE_INDEX_SHIFT)&HW_PAGE_INDEX_MASK];
-	if(tlbe[0].tag == (vpa & ~0xfff))
+	if (tlbe[0].tag == (vpa & ~0xfff))
 	{
 		tlbe[0].flags |= TLB_FLAG_INVALID;
 	}
-	if(tlbe[1].tag == (vpa & ~0xfff))
+	if (tlbe[1].tag == (vpa & ~0xfff))
 	{
 		tlbe[1].flags |= TLB_FLAG_INVALID;
 	}
 	tlb_entry *tlbe_i = tlb[1][(vpa>>HW_PAGE_INDEX_SHIFT)&HW_PAGE_INDEX_MASK];
-	if(tlbe_i[0].tag == (vpa & ~0xfff))
+	if (tlbe_i[0].tag == (vpa & ~0xfff))
 	{
 		tlbe_i[0].flags |= TLB_FLAG_INVALID;
 	}
-	if(tlbe_i[1].tag == (vpa & ~0xfff))
+	if (tlbe_i[1].tag == (vpa & ~0xfff))
 	{
 		tlbe_i[1].flags |= TLB_FLAG_INVALID;
 	}

@@ -25,10 +25,12 @@
 
 #pragma once
 
-#include "Thread.h"
+#include <string>
 
-#include "DSPBreakpoints.h"
-#include "DSPEmitter.h"
+#include "Common/Thread.h"
+
+#include "Core/DSP/DSPBreakpoints.h"
+#include "Core/DSP/DSPEmitter.h"
 
 #define DSP_IRAM_BYTE_SIZE  0x2000
 #define DSP_IRAM_SIZE       0x1000
@@ -268,8 +270,7 @@ extern DSPEmitter *dspjit;
 extern u16 cyclesLeft;
 extern bool init_hax;
 
-bool DSPCore_Init(const char *irom_filename, const char *coef_filename,
-				  bool bUsingJIT);
+bool DSPCore_Init(const std::string& irom_filename, const std::string& coef_filename, bool bUsingJIT);
 
 void DSPCore_Reset();
 void DSPCore_Shutdown(); // Frees all allocated memory.

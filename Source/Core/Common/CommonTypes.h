@@ -10,7 +10,6 @@
 #pragma once
 
 #include <cstdint>
-#include <cstddef>
 
 #ifdef _WIN32
 

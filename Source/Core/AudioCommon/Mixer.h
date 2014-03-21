@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include "WaveFile.h"
-#include "StdMutex.h"
+#include <string>
+
+#include "AudioCommon/WaveFile.h"
+#include "Common/StdMutex.h"
 
 // 16 bit Stereo
 #define MAX_SAMPLES     (1024 * 2) // 64ms
@@ -57,23 +59,31 @@ public:
 	// ---------------------
 
 
-	virtual void StartLogAudio(const char *filename) {
-		if (! m_logAudio) {
+	virtual void StartLogAudio(const std::string& filename)
+	{
+		if (! m_logAudio)
+		{
 			m_logAudio = true;
 			g_wave_writer.Start(filename, GetSampleRate());
 			g_wave_writer.SetSkipSilence(false);
 			NOTICE_LOG(DSPHLE, "Starting Audio logging");
-		} else {
+		}
+		else
+		{
 			WARN_LOG(DSPHLE, "Audio logging has already been started");
 		}
 	}
 
-	virtual void StopLogAudio() {
-		if (m_logAudio) {
+	virtual void StopLogAudio()
+	{
+		if (m_logAudio)
+		{
 			m_logAudio = false;
 			g_wave_writer.Stop();
 			NOTICE_LOG(DSPHLE, "Stopping Audio logging");
-		} else {
+		}
+		else
+		{
 			WARN_LOG(DSPHLE, "Audio logging has already been stopped");
 		}
 	}

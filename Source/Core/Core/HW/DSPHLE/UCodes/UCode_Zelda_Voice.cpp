@@ -4,14 +4,14 @@
 
 #include <sstream>
 
-#include "UCodes.h"
-#include "UCode_Zelda.h"
+#include "AudioCommon/AudioCommon.h"
+#include "AudioCommon/Mixer.h"
+#include "Common/MathUtil.h"
 
-#include "AudioCommon.h"
-#include "MathUtil.h"
-#include "Mixer.h"
-#include "../../Memmap.h"
-#include "../../DSP.h"
+#include "Core/HW/DSP.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/DSPHLE/UCodes/UCode_Zelda.h"
+#include "Core/HW/DSPHLE/UCodes/UCodes.h"
 
 void CUCode_Zelda::ReadVoicePB(u32 _Addr, ZeldaVoicePB& PB)
 {
@@ -225,7 +225,7 @@ void PrintObject(const T &Obj)
 	ss << std::hex;
 	for (size_t i = 0; i < sizeof(T); i++)
 	{
-		if((i & 1) == 0)
+		if ((i & 1) == 0)
 			ss << ' ';
 		ss.width(2);
 		ss.fill('0');
@@ -296,7 +296,7 @@ restart:
 	{
 		PB.ReachedEnd = 0;
 
-		if ((PB.RepeatMode == 0) || (!PB.StopOnSilence == 0))
+		if ((PB.RepeatMode == 0) || (PB.StopOnSilence != 0))
 		{
 			PB.KeyOff = 1;
 			PB.RemLength = 0;
@@ -657,7 +657,6 @@ ContinueWithBlock:
 				switch (count) {
 				case 0: _LeftBuffer[i] += (u64)unmixed_audio * ramp >> 29; break;
 				case 1: _RightBuffer[i] += (u64)unmixed_audio * ramp >> 29; break;
-					break;
 				}
 			}
 		}

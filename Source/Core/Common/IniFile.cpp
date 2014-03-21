@@ -5,18 +5,19 @@
 
 // see IniFile.h
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <string>
-#include <vector>
-#include <iostream>
-#include <fstream>
 #include <algorithm>
+#include <cstddef>
+#include <cstring>
+#include <fstream>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "FileUtil.h"
-#include "StringUtil.h"
-#include "IniFile.h"
+#include "Common/CommonTypes.h"
+#include "Common/FileUtil.h"
+#include "Common/IniFile.h"
+#include "Common/StringUtil.h"
 
 namespace {
 
@@ -113,7 +114,7 @@ bool IniFile::Section::Get(const std::string& key, std::string* value, const std
 		return false;
 }
 
-bool IniFile::Section::Get(const std::string& key, std::vector<std::string>& out)
+bool IniFile::Section::Get(const std::string& key, std::vector<std::string>* out)
 {
 	std::string temp;
 	bool retval = Get(key, &temp);
@@ -123,16 +124,15 @@ bool IniFile::Section::Get(const std::string& key, std::vector<std::string>& out
 	}
 	// ignore starting , if any
 	size_t subStart = temp.find_first_not_of(",");
-	size_t subEnd;
 
 	// split by ,
 	while (subStart != std::string::npos)
 	{
 		// Find next ,
-		subEnd = temp.find_first_of(",", subStart);
+		size_t subEnd = temp.find_first_of(",", subStart);
 		if (subStart != subEnd)
 			// take from first char until next ,
-			out.push_back(StripSpaces(temp.substr(subStart, subEnd - subStart)));
+			out->push_back(StripSpaces(temp.substr(subStart, subEnd - subStart)));
 		// Find the next non , char
 		subStart = temp.find_first_not_of(",", subEnd);
 	}
@@ -212,7 +212,7 @@ const IniFile::Section* IniFile::GetSection(const std::string& sectionName) cons
 	for (const Section& sect : sections)
 		if (!strcasecmp(sect.name.c_str(), sectionName.c_str()))
 			return (&(sect));
-	return 0;
+	return nullptr;
 }
 
 IniFile::Section* IniFile::GetSection(const std::string& sectionName)
@@ -220,7 +220,7 @@ IniFile::Section* IniFile::GetSection(const std::string& sectionName)
 	for (Section& sect : sections)
 		if (!strcasecmp(sect.name.c_str(), sectionName.c_str()))
 			return (&(sect));
-	return 0;
+	return nullptr;
 }
 
 IniFile::Section* IniFile::GetOrCreateSection(const std::string& sectionName)
@@ -273,23 +273,25 @@ bool IniFile::DeleteKey(const std::string& sectionName, const std::string& key)
 }
 
 // Return a list of all keys in a section
-bool IniFile::GetKeys(const std::string& sectionName, std::vector<std::string>& keys) const
+bool IniFile::GetKeys(const std::string& sectionName, std::vector<std::string>* keys) const
 {
 	const Section* section = GetSection(sectionName);
 	if (!section)
+	{
 		return false;
-	keys = section->keys_order;
+	}
+	*keys = section->keys_order;
 	return true;
 }
 
 // Return a list of all lines in a section
-bool IniFile::GetLines(const std::string& sectionName, std::vector<std::string>& lines, const bool remove_comments) const
+bool IniFile::GetLines(const std::string& sectionName, std::vector<std::string>* lines, const bool remove_comments) const
 {
 	const Section* section = GetSection(sectionName);
 	if (!section)
 		return false;
 
-	lines.clear();
+	lines->clear();
 	for (std::string line : section->lines)
 	{
 		line = StripSpaces(line);
@@ -308,7 +310,7 @@ bool IniFile::GetLines(const std::string& sectionName, std::vector<std::string>&
 			}
 		}
 
-		lines.push_back(line);
+		lines->push_back(line);
 	}
 
 	return true;
@@ -335,7 +337,7 @@ bool IniFile::Load(const std::string& filename, bool keep_current_data)
 
 	if (in.fail()) return false;
 
-	Section* current_section = NULL;
+	Section* current_section = nullptr;
 	while (!in.eof())
 	{
 		char templine[MAX_BYTES];
@@ -373,8 +375,11 @@ bool IniFile::Load(const std::string& filename, bool keep_current_data)
 					// Lines starting with '$', '*' or '+' are kept verbatim.
 					// Kind of a hack, but the support for raw lines inside an
 					// INI is a hack anyway.
-					if ((key == "" && value == "")
-					        || (line.size() >= 1 && (line[0] == '$' || line[0] == '+' || line[0] == '*')))
+					if ((key == "" && value == "") ||
+					    (line.size() >= 1 &&
+					     (line[0] == '$' ||
+					      line[0] == '+' ||
+					      line[0] == '*')))
 						current_section->lines.push_back(line);
 					else
 						current_section->Set(key, value);
@@ -423,7 +428,7 @@ bool IniFile::Save(const std::string& filename)
 	return File::RenameSync(temp, filename);
 }
 
-bool IniFile::Get(const std::string& sectionName, const std::string& key, std::vector<std::string>& values)
+bool IniFile::Get(const std::string& sectionName, const std::string& key, std::vector<std::string>* values)
 {
 	Section *section = GetSection(sectionName);
 	if (!section)

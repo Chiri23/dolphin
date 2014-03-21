@@ -2,13 +2,14 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
+#include "Common/Common.h"
+#include "Core/HW/Memmap.h"
 
-#include "EfbInterface.h"
-#include "BPMemLoader.h"
-#include "LookUpTables.h"
-#include "SWPixelEngine.h"
-#include "HW/Memmap.h"
+#include "VideoBackends/Software/BPMemLoader.h"
+#include "VideoBackends/Software/EfbInterface.h"
+#include "VideoBackends/Software/SWPixelEngine.h"
+
+#include "VideoCommon/LookUpTables.h"
 
 
 u8 efb[EFB_WIDTH*EFB_HEIGHT*6];
@@ -473,9 +474,9 @@ namespace EfbInterface
 
 		// GameCube/Wii uses the BT.601 standard algorithm for converting to YCbCr; see
 		// http://www.equasys.de/colorconversion.html#YCbCr-RGBColorFormatConversion
-		out->Y =  0.257f * color[RED_C] +  0.504f * color[GRN_C] +  0.098f * color[BLU_C];
-		out->U = -0.148f * color[RED_C] + -0.291f * color[GRN_C] +  0.439f * color[BLU_C];
-		out->V =  0.439f * color[RED_C] + -0.368f * color[GRN_C] + -0.071f * color[BLU_C];
+		out->Y = (u8)( 0.257f * color[RED_C] +  0.504f * color[GRN_C] +  0.098f * color[BLU_C]);
+		out->U = (u8)(-0.148f * color[RED_C] + -0.291f * color[GRN_C] +  0.439f * color[BLU_C]);
+		out->V = (u8)( 0.439f * color[RED_C] + -0.368f * color[GRN_C] + -0.071f * color[BLU_C]);
 	}
 
 	u32 GetDepth(u16 x, u16 y)
@@ -551,7 +552,7 @@ namespace EfbInterface
 
 	// Like CopyToXFB, but we copy directly into the opengl colour texture without going via Gamecube main memory or doing a yuyv conversion
 	void BypassXFB(u8* texture, u32 fbWidth, u32 fbHeight, const EFBRectangle& sourceRc, float Gamma) {
-		if(fbWidth*fbHeight > 640*568) {
+		if (fbWidth*fbHeight > 640*568) {
 			ERROR_LOG(VIDEO, "Framebuffer is too large: %ix%i", fbWidth, fbHeight);
 			return;
 		}

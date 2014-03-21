@@ -2,15 +2,22 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include <algorithm>
+#include <cstdarg>
+#include <cstring>
+#include <mutex>
+#include <ostream>
+#include <set>
+#include <string>
 
 #ifdef ANDROID
-#include "Host.h"
+#include "Core/Host.h"
 #endif
-#include "LogManager.h"
-#include "Timer.h"
-#include "Thread.h"
-#include "FileUtil.h"
+#include "Common/ConsoleListener.h"
+#include "Common/FileUtil.h"
+#include "Common/Log.h"
+#include "Common/LogManager.h"
+#include "Common/StringUtil.h"
+#include "Common/Timer.h"
 
 void GenericLog(LogTypes::LOG_LEVELS level, LogTypes::LOG_TYPE type,
 		const char *file, int line, const char* fmt, ...)
@@ -23,7 +30,7 @@ void GenericLog(LogTypes::LOG_LEVELS level, LogTypes::LOG_TYPE type,
 	va_end(args);
 }
 
-LogManager *LogManager::m_logManager = NULL;
+LogManager *LogManager::m_logManager = nullptr;
 
 LogManager::LogManager()
 {
@@ -76,11 +83,18 @@ LogManager::LogManager()
 	m_Log[LogTypes::NETPLAY]            = new LogContainer("NETPLAY",         "Netplay");
 
 	m_fileLog = new FileLogListener(File::GetUserPath(F_MAINLOG_IDX).c_str());
+	m_consoleLog = new ConsoleListener();
+	m_debuggerLog = new DebuggerLogListener();
 
 	for (LogContainer* container : m_Log)
 	{
 		container->SetEnable(true);
 		container->AddListener(m_fileLog);
+		container->AddListener(m_consoleLog);
+#ifdef _MSC_VER
+		if (IsDebuggerPresent())
+			container->AddListener(m_debuggerLog);
+#endif
 	}
 }
 
@@ -89,12 +103,16 @@ LogManager::~LogManager()
 	for (int i = 0; i < LogTypes::NUMBER_OF_LOGS; ++i)
 	{
 		m_logManager->RemoveListener((LogTypes::LOG_TYPE)i, m_fileLog);
+		m_logManager->RemoveListener((LogTypes::LOG_TYPE)i, m_consoleLog);
+		m_logManager->RemoveListener((LogTypes::LOG_TYPE)i, m_debuggerLog);
 	}
 
 	for (LogContainer* container : m_Log)
 		delete container;
 
 	delete m_fileLog;
+	delete m_consoleLog;
+	delete m_debuggerLog;
 }
 
 void LogManager::Log(LogTypes::LOG_LEVELS level, LogTypes::LOG_TYPE type,
@@ -127,7 +145,7 @@ void LogManager::Init()
 void LogManager::Shutdown()
 {
 	delete m_logManager;
-	m_logManager = NULL;
+	m_logManager = nullptr;
 }
 
 LogContainer::LogContainer(const char* shortName, const char* fullName, bool enable)
@@ -174,4 +192,11 @@ void FileLogListener::Log(LogTypes::LOG_LEVELS, const char *msg)
 
 	std::lock_guard<std::mutex> lk(m_log_lock);
 	m_logfile << msg << std::flush;
+}
+
+void DebuggerLogListener::Log(LogTypes::LOG_LEVELS, const char *msg)
+{
+#if _MSC_VER
+	::OutputDebugStringA(msg);
+#endif
 }

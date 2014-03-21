@@ -23,18 +23,18 @@
 
    ====================================================================*/
 
-#include "Atomic.h"
-#include "Thread.h"
-#include "MemoryUtil.h"
+#include "Common/Atomic.h"
+#include "Common/CPUDetect.h"
+#include "Common/MemoryUtil.h"
+#include "Common/Thread.h"
 
-#include "DSPCore.h"
-#include "DSPHost.h"
-#include "DSPTables.h"
-#include "DSPAnalyzer.h"
-#include "DSPAccelerator.h"
-#include "DSPInterpreter.h"
-#include "DSPHWInterface.h"
-#include "CPUDetect.h"
+#include "Core/DSP/DSPAccelerator.h"
+#include "Core/DSP/DSPAnalyzer.h"
+#include "Core/DSP/DSPCore.h"
+#include "Core/DSP/DSPHost.h"
+#include "Core/DSP/DSPHWInterface.h"
+#include "Core/DSP/DSPInterpreter.h"
+#include "Core/DSP/DSPTables.h"
 
 #if _M_SSE >= 0x301 && !(defined __GNUC__ && !defined __SSSE3__)
 #include <tmmintrin.h>
@@ -119,7 +119,7 @@ void gdsp_ifx_write(u32 addr, u32 val)
 	{
 		case DSP_DIRQ:
 			if (val & 0x1)
-				DSPHost_InterruptRequest();
+				DSPHost::InterruptRequest();
 			else
 				INFO_LOG(DSPLLE, "Unknown Interrupt Request pc=%04x (%04x)", g_dsp.pc, val);
 			break;
@@ -246,7 +246,7 @@ static void gdsp_idma_in(u16 dsp_addr, u32 addr, u32 size)
 	}
 	WriteProtectMemory(g_dsp.iram, DSP_IRAM_BYTE_SIZE, false);
 
-	DSPHost_CodeLoaded((const u8*)g_dsp.iram + dsp_addr, size);
+	DSPHost::CodeLoaded((const u8*)g_dsp.iram + dsp_addr, size);
 
 	NOTICE_LOG(DSPLLE, "*** Copy new UCode from 0x%08x to 0x%04x (crc: %8x)", addr, dsp_addr, g_dsp.iram_crc);
 }

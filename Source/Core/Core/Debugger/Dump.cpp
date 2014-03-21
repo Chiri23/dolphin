@@ -2,16 +2,18 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include <stdio.h>
+#include <cstdio>
+#include <string>
 
-#include "Common.h"
-#include "Dump.h"
-#include "FileUtil.h"
+#include "Common/Common.h"
+#include "Common/FileUtil.h"
 
-CDump::CDump(const char* _szFilename) :
-	m_pData(NULL)
+#include "Core/Debugger/Dump.h"
+
+CDump::CDump(const std::string& filename) :
+	m_pData(nullptr)
 {
-	File::IOFile pStream(_szFilename, "rb");
+	File::IOFile pStream(filename, "rb");
 	if (pStream)
 	{
 		m_size = (size_t)pStream.GetSize();
@@ -24,10 +26,10 @@ CDump::CDump(const char* _szFilename) :
 
 CDump::~CDump(void)
 {
-	if (m_pData != NULL)
+	if (m_pData != nullptr)
 	{
 		delete[] m_pData;
-		m_pData = NULL;
+		m_pData = nullptr;
 	}
 }
 

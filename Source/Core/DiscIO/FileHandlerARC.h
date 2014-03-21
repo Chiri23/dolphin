@@ -4,11 +4,12 @@
 
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
-#include "CommonTypes.h"
-#include "Filesystem.h"
+#include "Common/CommonTypes.h"
+#include "DiscIO/Filesystem.h"
 
 namespace DiscIO
 {

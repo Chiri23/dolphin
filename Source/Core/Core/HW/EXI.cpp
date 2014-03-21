@@ -2,18 +2,18 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Common.h"
-#include "ChunkFile.h"
-#include "../ConfigManager.h"
-#include "../CoreTiming.h"
+#include "Common/ChunkFile.h"
+#include "Common/Common.h"
 
-#include "ProcessorInterface.h"
-#include "../PowerPC/PowerPC.h"
-#include "MMIO.h"
+#include "Core/ConfigManager.h"
+#include "Core/CoreTiming.h"
+#include "Core/Movie.h"
+#include "Core/HW/EXI.h"
+#include "Core/HW/MMIO.h"
+#include "Core/HW/ProcessorInterface.h"
+#include "Core/HW/Sram.h"
+#include "Core/PowerPC/PowerPC.h"
 
-#include "EXI.h"
-#include "Sram.h"
-#include "../Movie.h"
 SRAM g_SRAM;
 
 namespace ExpansionInterface
@@ -30,7 +30,7 @@ void Init()
 
 	if (Movie::IsPlayingInput() && Movie::IsUsingMemcard() && Movie::IsConfigSaved())
 		g_Channels[0]->AddDevice(EXIDEVICE_MEMORYCARD, 0); // SlotA
-	else if(Movie::IsPlayingInput() && !Movie::IsUsingMemcard() && Movie::IsConfigSaved())
+	else if (Movie::IsPlayingInput() && !Movie::IsUsingMemcard() && Movie::IsConfigSaved())
 		g_Channels[0]->AddDevice(EXIDEVICE_NONE,       0); // SlotA
 	else
 		g_Channels[0]->AddDevice(SConfig::GetInstance().m_EXIDevice[0], 0); // SlotA
@@ -47,7 +47,7 @@ void Shutdown()
 	for (auto& channel : g_Channels)
 	{
 		delete channel;
-		channel = NULL;
+		channel = nullptr;
 	}
 }
 
@@ -102,7 +102,7 @@ IEXIDevice* FindDevice(TEXIDevices device_type, int customIndex)
 		if (device)
 			return device;
 	}
-	return NULL;
+	return nullptr;
 }
 
 // Unused (?!)

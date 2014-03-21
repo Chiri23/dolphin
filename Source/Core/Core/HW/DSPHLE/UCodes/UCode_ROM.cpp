@@ -6,11 +6,12 @@
 #include <Windows.h>
 #endif
 
-#include "UCodes.h"
-#include "UCode_ROM.h"
-#include "Hash.h"
-#include "../../Memmap.h"
-#include "ConfigManager.h"
+#include "Common/Hash.h"
+
+#include "Core/ConfigManager.h"
+#include "Core/HW/Memmap.h"
+#include "Core/HW/DSPHLE/UCodes/UCode_ROM.h"
+#include "Core/HW/DSPHLE/UCodes/UCodes.h"
 
 CUCode_Rom::CUCode_Rom(DSPHLE *dsp_hle, u32 crc)
 	: IUCode(dsp_hle, crc)
@@ -56,10 +57,6 @@ void CUCode_Rom::HandleMail(u32 _uMail)
 				m_CurrentUCode.m_Length = _uMail & 0xffff;
 				break;
 
-			case 0x80F3C002:
-				m_CurrentUCode.m_IMEMAddress = _uMail & 0xffff;
-				break;
-
 			case 0x80F3B002:
 				m_CurrentUCode.m_DMEMLength = _uMail & 0xffff;
 				if (m_CurrentUCode.m_DMEMLength) {
@@ -67,16 +64,17 @@ void CUCode_Rom::HandleMail(u32 _uMail)
 				}
 				break;
 
+			case 0x80F3C002:
+				m_CurrentUCode.m_IMEMAddress = _uMail & 0xffff;
+				break;
+
 			case 0x80F3D001:
-			{
 				m_CurrentUCode.m_StartPC = _uMail & 0xffff;
 				BootUCode();
 				return;  // Important! BootUCode indirectly does "delete this;". Must exit immediately.
-			}
-			break;
 
 			default:
-			break;
+				break;
 		}
 
 		// THE GODDAMN OVERWRITE WAS HERE. Without the return above, since BootUCode may delete "this", well ...

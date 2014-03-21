@@ -2,18 +2,17 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "Atomic.h"
-#include "Mixer.h"
-#include "AudioCommon.h"
-#include "CPUDetect.h"
-#include "../Core/Host.h"
-#include "ConfigManager.h"
-#include "HW/VideoInterface.h"
-
-#include "../Core/HW/AudioInterface.h"
+#include "AudioCommon/AudioCommon.h"
+#include "AudioCommon/Mixer.h"
+#include "Common/Atomic.h"
+#include "Common/CPUDetect.h"
+#include "Core/ConfigManager.h"
+#include "Core/Host.h"
+#include "Core/HW/AudioInterface.h"
+#include "Core/HW/VideoInterface.h"
 
 // UGLINESS
-#include "../Core/PowerPC/PowerPC.h"
+#include "Core/PowerPC/PowerPC.h"
 
 #if _M_SSE >= 0x301 && !(defined __GNUC__ && !defined __SSSE3__)
 #include <tmmintrin.h>
@@ -49,8 +48,8 @@ unsigned int CMixer::Mix(short* samples, unsigned int numSamples, bool consider_
 	float numLeft = ((indexW - indexR) & INDEX_MASK) / 2;
 	m_numLeftI = (numLeft + m_numLeftI*(CONTROL_AVG-1)) / CONTROL_AVG;
 	float offset = (m_numLeftI - LOW_WATERMARK) * CONTROL_FACTOR;
-	if(offset > MAX_FREQ_SHIFT) offset = MAX_FREQ_SHIFT;
-	if(offset < -MAX_FREQ_SHIFT) offset = -MAX_FREQ_SHIFT;
+	if (offset > MAX_FREQ_SHIFT) offset = MAX_FREQ_SHIFT;
+	if (offset < -MAX_FREQ_SHIFT) offset = -MAX_FREQ_SHIFT;
 
 	//render numleft sample pairs to samples[]
 	//advance indexR with sample position
@@ -66,7 +65,7 @@ unsigned int CMixer::Mix(short* samples, unsigned int numSamples, bool consider_
 	static u32 frac = 0;
 	const u32 ratio = (u32)( 65536.0f * aid_sample_rate / (float)m_sampleRate );
 
-	if(ratio > 0x10000)
+	if (ratio > 0x10000)
 		ERROR_LOG(AUDIO, "ratio out of range");
 
 	for (; currentSample < numSamples*2 && ((indexW-indexR) & INDEX_MASK) > 2; currentSample+=2) {

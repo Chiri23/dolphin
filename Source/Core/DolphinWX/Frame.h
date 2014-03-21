@@ -4,45 +4,51 @@
 
 #pragma once
 
-#include <wx/wx.h> // wxWidgets
-#include <wx/busyinfo.h>
-#include <wx/mstream.h>
-#include <wx/listctrl.h>
-#include <wx/artprov.h>
-#include <wx/aui/aui.h>
-#include <wx/tooltip.h>
+#include <cstddef>
+#include <mutex>
 #include <string>
 #include <vector>
+#include <wx/bitmap.h>
+#include <wx/chartype.h>
+#include <wx/defs.h>
+#include <wx/event.h>
+#include <wx/frame.h>
+#include <wx/gdicmn.h>
+#include <wx/image.h>
+#include <wx/mstream.h>
+#include <wx/panel.h>
+#include <wx/string.h>
+#include <wx/toplevel.h>
+#include <wx/windowid.h>
 
-#ifdef __APPLE__
-#include <Cocoa/Cocoa.h>
-#endif
+#include "Common/CommonTypes.h"
+#include "Common/Thread.h"
+#include "DolphinWX/Globals.h"
+#include "InputCommon/GCPadStatus.h"
 
-#include "CDUtils.h"
-#include "Debugger/CodeWindow.h"
-#include "LogWindow.h"
-#include "LogConfigWindow.h"
-#include "TASInputDlg.h"
-#include "Movie.h"
 #if defined(HAVE_X11) && HAVE_X11
-#include "X11Utils.h"
+#include "DolphinWX/X11Utils.h"
 #endif
-
-// A shortcut to access the bitmaps
-#define wxGetBitmapFromMemory(name) _wxGetBitmapFromMemory(name, sizeof(name))
-static inline wxBitmap _wxGetBitmapFromMemory(const unsigned char* data, int length)
-{
-	wxMemoryInputStream is(data, length);
-	return(wxBitmap(wxImage(is, wxBITMAP_TYPE_ANY, -1), -1));
-}
 
 // Class declarations
 class CGameListCtrl;
-class GameListItem;
+class CCodeWindow;
 class CLogWindow;
 class FifoPlayerDlg;
+class LogConfigWindow;
 class NetPlaySetupDiag;
+class TASInputDlg;
 class wxCheatsWindow;
+
+class wxAuiManager;
+class wxAuiManagerEvent;
+class wxAuiNotebook;
+class wxAuiNotebookEvent;
+class wxAuiToolBar;
+class wxAuiToolBarEvent;
+class wxListEvent;
+class wxMenuItem;
+class wxWindow;
 
 // The CPanel class to receive MSWWindowProc messages from the video backend.
 class CPanel : public wxPanel
@@ -132,7 +138,7 @@ public:
 	bool RendererHasFocus();
 	void DoFullscreen(bool bF);
 	void ToggleDisplayMode (bool bFullscreen);
-	void UpdateWiiMenuChoice(wxMenuItem *WiiMenuItem=NULL);
+	void UpdateWiiMenuChoice(wxMenuItem *WiiMenuItem=nullptr);
 	static void ConnectWiimote(int wm_idx, bool connect);
 
 	const CGameListCtrl *GetGameListCtrl() const;
@@ -238,7 +244,7 @@ private:
 	void DoFloatNotebookPage(wxWindowID Id);
 	wxFrame * CreateParentFrame(wxWindowID Id = wxID_ANY,
 			const wxString& title = wxT(""),
-			wxWindow * = NULL);
+			wxWindow * = nullptr);
 	wxString AuiFullscreen, AuiCurrent;
 	void AddPane();
 	void UpdateCurrentPerspective();

@@ -4,9 +4,10 @@
 
 #pragma once
 
+#include <string>
 #include <wayland-client.h>
-#include <wayland-egl.h>
 #include <wayland-cursor.h>
+#include <wayland-egl.h>
 #include <xkbcommon/xkbcommon.h>
 
 #define MOD_SHIFT_MASK    0x01
@@ -22,7 +23,7 @@ public:
 	void *EGLGetDisplay(void);
 	void *CreateWindow(void);
 	void DestroyWindow(void);
-	void UpdateFPSDisplay(const char *text);
+	void UpdateFPSDisplay(const std::string& text);
 	void ToggleFullscreen(bool fullscreen);
 	void SwapBuffers();
 };

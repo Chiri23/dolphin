@@ -1,30 +1,18 @@
-// Copyright (C) 2003 Dolphin Project.
+// Copyright 2014 Dolphin Emulator Project
+// Licensed under GPLv2
+// Refer to the license.txt file included.
 
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, version 2.0.
+#include "Common/ArmEmitter.h"
+#include "Common/Common.h"
 
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License 2.0 for more details.
+#include "Core/Core.h"
+#include "Core/CoreTiming.h"
+#include "Core/PowerPC/PowerPC.h"
+#include "Core/PowerPC/PPCTables.h"
 
-// A copy of the GPL 2.0 should have been included with the program.
-// If not, see http://www.gnu.org/licenses/
-
-// Official SVN repository and contact information can be found at
-// http://code.google.com/p/dolphin-emu/
-#include "Common.h"
-
-#include "../../Core.h"
-#include "../PowerPC.h"
-#include "../../CoreTiming.h"
-#include "../PPCTables.h"
-#include "ArmEmitter.h"
-
-#include "Jit.h"
-#include "JitRegCache.h"
-#include "JitAsm.h"
+#include "Core/PowerPC/JitArm32/Jit.h"
+#include "Core/PowerPC/JitArm32/JitAsm.h"
+#include "Core/PowerPC/JitArm32/JitRegCache.h"
 
 void JitArm::mtspr(UGeckoInstruction inst)
 {
@@ -63,7 +51,7 @@ void JitArm::mtspr(UGeckoInstruction inst)
 		break;
 
 	default:
-		Default(inst);
+		FallBackToInterpreter(inst);
 		return;
 	}
 
@@ -89,7 +77,7 @@ void JitArm::mfspr(UGeckoInstruction inst)
 	case SPR_DEC:
 	case SPR_TL:
 	case SPR_TU:
-		Default(inst);
+		FallBackToInterpreter(inst);
 		return;
 	default:
 		ARMReg RD = gpr.R(inst.RD);
@@ -254,7 +242,7 @@ void JitArm::crXXX(UGeckoInstruction inst)
 		LSR(rB, rB, shiftB);
 
 	// Compute combined bit
-	switch(inst.SUBOP10)
+	switch (inst.SUBOP10)
 	{
 	case 33: // crnor
 		ORR(rA, rA, rB);

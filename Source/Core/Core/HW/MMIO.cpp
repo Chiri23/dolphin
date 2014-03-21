@@ -2,10 +2,10 @@
 // Licensed under GPLv2
 // Refer to the license.txt file included.
 
-#include "MMIO.h"
-#include "MMIOHandlers.h"
-
 #include <functional>
+
+#include "Core/HW/MMIO.h"
+#include "Core/HW/MMIOHandlers.h"
 
 namespace MMIO
 {
@@ -148,12 +148,12 @@ public:
 
 	virtual void AcceptReadVisitor(ReadHandlingMethodVisitor<T>& v) const
 	{
-		v.VisitComplex(read_lambda_);
+		v.VisitComplex(&read_lambda_);
 	}
 
 	virtual void AcceptWriteVisitor(WriteHandlingMethodVisitor<T>& v) const
 	{
-		v.VisitComplex(write_lambda_);
+		v.VisitComplex(&write_lambda_);
 	}
 
 private:
@@ -194,8 +194,8 @@ template <typename T>
 ReadHandlingMethod<T>* InvalidRead()
 {
 	return ComplexRead<T>([](u32 addr) {
-		ERROR_LOG(MEMMAP, "Trying to read from an invalid MMIO (addr=%08x)",
-			addr);
+		ERROR_LOG(MEMMAP, "Trying to read%d from an invalid MMIO (addr=%08x)",
+			8 * (int)(sizeof (T)), addr);
 		return -1;
 	});
 }
@@ -203,8 +203,8 @@ template <typename T>
 WriteHandlingMethod<T>* InvalidWrite()
 {
 	return ComplexWrite<T>([](u32 addr, T val) {
-		ERROR_LOG(MEMMAP, "Trying to write to an invalid MMIO (addr=%08x, val=%08x)",
-			addr, (u32)val);
+		ERROR_LOG(MEMMAP, "Trying to write%d to an invalid MMIO (addr=%08x, val=%08x)",
+			8 * (int)(sizeof (T)), addr, (u32)val);
 	});
 }
 
@@ -230,8 +230,9 @@ ReadHandlingMethod<T>* ReadToSmaller(Mapping* mmio, u32 high_part_addr, u32 low_
 	mmio->GetHandlerForRead(low_part_addr, &low_part);
 
 	// TODO(delroth): optimize
-	return ComplexRead<T>([high_part, low_part](u32 addr) {
-		return ((T)high_part->Read(addr) << (8 * sizeof (ST))) | low_part->Read(addr);
+	return ComplexRead<T>([=](u32 addr) {
+		return ((T)high_part->Read(high_part_addr) << (8 * sizeof (ST)))
+			| low_part->Read(low_part_addr);
 	});
 }
 
@@ -246,9 +247,9 @@ WriteHandlingMethod<T>* WriteToSmaller(Mapping* mmio, u32 high_part_addr, u32 lo
 	mmio->GetHandlerForWrite(low_part_addr, &low_part);
 
 	// TODO(delroth): optimize
-	return ComplexWrite<T>([high_part, low_part](u32 addr, T val) {
-		high_part->Write(addr, val >> (8 * sizeof (ST)));
-		low_part->Write(addr, (ST)val);
+	return ComplexWrite<T>([=](u32 addr, T val) {
+		high_part->Write(high_part_addr, val >> (8 * sizeof (ST)));
+		low_part->Write(low_part_addr, (ST)val);
 	});
 }
 
@@ -312,9 +313,9 @@ void ReadHandler<T>::ResetMethod(ReadHandlingMethod<T>* method)
 			ret = [addr, mask](u32) { return *addr & mask; };
 		}
 
-		virtual void VisitComplex(std::function<T(u32)> lambda)
+		virtual void VisitComplex(const std::function<T(u32)>* lambda)
 		{
-			ret = lambda;
+			ret = *lambda;
 		}
 	};
 
@@ -366,9 +367,9 @@ void WriteHandler<T>::ResetMethod(WriteHandlingMethod<T>* method)
 			ret = [ptr, mask](u32, T val) { *ptr = val & mask; };
 		}
 
-		virtual void VisitComplex(std::function<void(u32, T)> lambda)
+		virtual void VisitComplex(const std::function<void(u32, T)>* lambda)
 		{
-			ret = lambda;
+			ret = *lambda;
 		}
 	};
 

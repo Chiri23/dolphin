@@ -11,25 +11,37 @@
 // might have to change this setup for wiimote
 #define PROFILES_PATH       "Profiles/"
 
-#include <wx/wx.h>
-#include <wx/listbox.h>
-#include <wx/textctrl.h>
-#include <wx/button.h>
-#include <wx/stattext.h>
-#include <wx/combobox.h>
-#include <wx/checkbox.h>
-#include <wx/notebook.h>
-#include <wx/panel.h>
-#include <wx/spinctrl.h>
-
-#include <sstream>
+#include <cstddef>
+#include <string>
 #include <vector>
+#include <wx/button.h>
+#include <wx/control.h>
+#include <wx/dialog.h>
+#include <wx/gdicmn.h>
+#include <wx/panel.h>
+#include <wx/sizer.h>
+#include <wx/spinctrl.h>
+#include <wx/string.h>
+#include <wx/translation.h>
 
-#include "ControllerInterface/ControllerInterface.h"
-#include "ControllerEmu.h"
-#include "InputConfig.h"
-#include "FileSearch.h"
-#include "UDPWrapper.h"
+#include "InputCommon/ControllerEmu.h"
+#include "InputCommon/ControllerInterface/ControllerInterface.h"
+#include "InputCommon/ControllerInterface/Device.h"
+
+class InputPlugin;
+class UDPWrapper;
+class wxComboBox;
+class wxCommandEvent;
+class wxEvent;
+class wxListBox;
+class wxNotebook;
+class wxSlider;
+class wxStaticBitmap;
+class wxStaticText;
+class wxTextCtrl;
+class wxTimer;
+class wxTimerEvent;
+class wxWindow;
 
 class PadSetting
 {
@@ -49,8 +61,8 @@ class PadSettingExtension : public PadSetting
 {
 public:
 	PadSettingExtension(wxWindow* const parent, ControllerEmu::Extension* const ext);
-	void UpdateGUI();
-	void UpdateValue();
+	void UpdateGUI() override;
+	void UpdateValue() override;
 
 	ControllerEmu::Extension* const extension;
 };
@@ -63,8 +75,8 @@ public:
 			, wxSize(54, -1), 0, setting->low, setting->high, (int)(setting->value * 100)))
 			, value(setting->value) {}
 
-	void UpdateGUI();
-	void UpdateValue();
+	void UpdateGUI() override;
+	void UpdateValue() override;
 
 	ControlState& value;
 };
@@ -72,9 +84,9 @@ public:
 class PadSettingCheckBox : public PadSetting
 {
 public:
-	PadSettingCheckBox(wxWindow* const parent, ControlState& _value, const char* const label);
-	void UpdateGUI();
-	void UpdateValue();
+	PadSettingCheckBox(wxWindow* const parent, ControlState& _value, const std::string& label);
+	void UpdateGUI() override;
+	void UpdateValue() override;
 
 	ControlState& value;
 };
@@ -88,7 +100,7 @@ public:
 
 	wxStaticBoxSizer* CreateControlChooser(GamepadPage* const parent);
 
-	virtual bool Validate();
+	virtual bool Validate() override;
 
 	void DetectControl(wxCommandEvent& event);
 	void ClearControl(wxCommandEvent& event);
@@ -161,7 +173,7 @@ public:
 class ControlGroupsSizer : public wxBoxSizer
 {
 public:
-	ControlGroupsSizer(ControllerEmu* const controller, wxWindow* const parent, GamepadPage* const eventsink, std::vector<ControlGroupBox*>* const groups = NULL);
+	ControlGroupsSizer(ControllerEmu* const controller, wxWindow* const parent, GamepadPage* const eventsink, std::vector<ControlGroupBox*>* const groups = nullptr);
 };
 
 class InputConfigDialog;
@@ -222,7 +234,7 @@ public:
 	InputConfigDialog(wxWindow* const parent, InputPlugin& plugin, const std::string& name, const int tab_num = 0);
 	//~InputConfigDialog();
 
-	bool Destroy();
+	bool Destroy() override;
 
 	void ClickSave(wxCommandEvent& event);
 
